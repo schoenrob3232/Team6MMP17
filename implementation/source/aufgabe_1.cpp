@@ -109,3 +109,25 @@ bool compareToGroundTruth(Mat groundTruth, Mat potentialLocation) {
 	}
 
 }
+
+
+
+/*
+Checks if the proposed location fits at least one ground
+truth in the image (as returned by the method getGroundTruth(string filename)) 
+over 50%. Returns true, if so.
+
+*/
+bool compareToAllGroundTruths(Mat allGroundTruths, Mat potentialLocation) {
+	Mat groundTruth = Mat::zeros(1, 4, CV_32S);
+	int truthCount = allGroundTruths.rows;
+	for (int i = 0; i < truthCount; i++) {
+		for (int j = 0; j < 4; j++) {
+			groundTruth.at<int>(0, j) = allGroundTruths.at<int>(i, j);
+			if (compareToGroundTruth(groundTruth, potentialLocation)) {
+				return true;
+			}
+		}
+	}
+	return false;
+}

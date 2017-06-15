@@ -1,4 +1,6 @@
-#pragma once
+#ifndef AUFGABE_1_H_INCLUDED
+#define AUFGSBE_1_H_INCLUDED
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -12,3 +14,6 @@ using namespace cv;
 
 Mat getGroundTruth(string filename);
 bool compareToGroundTruth(Mat groundTruth, Mat potentialLocation);
+bool compareToAllGroundTruths(Mat allGroundTruths, Mat potentialLocation);
+
+#endif
