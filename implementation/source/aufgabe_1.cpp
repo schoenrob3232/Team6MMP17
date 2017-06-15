@@ -12,7 +12,7 @@ using namespace std;
 using namespace cv;
 
 /*
-Extracts the ground truth of an annotation (filename) to integer Mat with
+Extracts the ground truth of an annotation (filename) to integer Nx4-Mat (for N persons) with
 dimensions / indices:
 (person , coordinate)
 Example
@@ -61,4 +61,51 @@ Mat getGroundTruth(string filename) {
 	}
 	file.close();
 	return persons;
+}
+
+/*
+Gets two 1x4 Mats and checks if their IoU is over 0.500 (50%), 
+which is enough to treat the detection as correct.
+
+*/
+bool compareToGroundTruth(Mat groundTruth, Mat potentialLocation) {
+	int x1_truth, y1_truth, x2_truth, y2_truth, x1_loc, y1_loc, x2_loc, y2_loc, intersection, the_union;
+	x1_truth = groundTruth.at<int>(0, 0);
+	y1_truth = groundTruth.at<int>(0, 1);
+	x2_truth = groundTruth.at<int>(0, 2);
+	y2_truth = groundTruth.at<int>(0, 3);
+	x1_loc = potentialLocation.at<int>(0, 0);
+	y1_loc = potentialLocation.at<int>(0, 1);
+	x2_loc = potentialLocation.at<int>(0, 2);
+	y2_loc = potentialLocation.at<int>(0, 3);
+	double intersectionOverUnion;
+
+	intersection = 0;
+	if ((x2_loc - x1_loc) * (y2_loc - y1_loc) < (x2_truth - x1_truth) * (y2_truth - y1_truth)) {
+		for (int i = y1_loc; i < y2_loc; i++) {
+			for (int j = x1_loc; j < x2_loc; j++) {
+				if (i >= y1_truth && j >= y1_truth && i <= y2_truth && j <= x2_truth) {
+					intersection++;
+				}
+			}
+		}
+	} else {
+		for (int i = y1_truth; i < y2_truth; i++) {
+			for (int j = x1_truth; j < x2_truth; j++) {
+				if (i >= y1_loc && j >= y1_loc && i <= y2_loc && j <= x2_loc) {
+					intersection++;
+				}
+			}
+		}
+	}
+
+	the_union = (x2_loc - x1_loc) * (y2_loc - y1_loc) + (x2_truth - x1_truth) * (y2_truth - y1_truth) - intersection;
+	intersectionOverUnion = ((double)intersection) / ((double)the_union);
+
+	if (intersectionOverUnion >= 0.500) {
+		return true;
+	} else {
+		return false;
+	}
+
 }

@@ -14,6 +14,7 @@ int main() {
 	// Filename will propably have to be changed!!
 	cout << "Ground truths from image INRIAPerson\\Test\\annotations\\crop_000005.txt" << endl;
 	cout << getGroundTruth("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Test\\annotations\\crop_000005.txt");
+
 	getchar();
 	return 0;
 }

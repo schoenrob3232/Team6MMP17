@@ -11,3 +11,4 @@ using namespace std;
 using namespace cv;
 
 Mat getGroundTruth(string filename);
+bool compareToGroundTruth(Mat groundTruth, Mat potentialLocation);
