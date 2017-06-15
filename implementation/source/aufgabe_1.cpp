@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cmath>
 
 #include "aufgabe_1.h"
 
@@ -130,4 +131,39 @@ bool compareToAllGroundTruths(Mat allGroundTruths, Mat potentialLocation) {
 		}
 	}
 	return false;
+}
+
+
+/*computes a hogblock normalized with L2-Hys*/
+Mat computeHOGBlock(int cell_pos_x, int cell_pos_y, int block_size, double *** hogCells, vector<int> dims) {
+	int block_len = block_size * block_size * dims[2];
+	Mat block = Mat::zeros(0, block_len, CV_32F);
+	int dim_z = dims[2];
+	int k = 0;
+	double sum;
+	//compute (raw) block
+	for (int i = cell_pos_y; i < cell_pos_y + block_size; i++) {
+		for (int j = cell_pos_x; j < cell_pos_x + block_size; j++) {
+			for (int l = 0; l < dim_z; l++) {
+				block.at<float>(0, k) = hogCells[i][j][l];
+				k++;
+			}
+		}
+	}
+
+	//normalize with L2-Hys
+	sum = 0;
+	for (int i = 0; i < block_len; i++) {
+		sum += pow(block.at<float>(0, i), 2.0);
+	}
+	sum += pow(0.0000001, 2.0);
+	sum = sqrt(sum);
+	for (int i = 0; i < block_len; i++) {
+		block.at<float>(0, i) = block.at<float>(0, i) / sum;
+		if (block.at<float>(0, i) > 0.2) {
+			block.at<float>(0, i) = 0.2;
+		}
+	}
+	
+	return block;
 }
