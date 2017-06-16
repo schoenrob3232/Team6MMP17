@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <cmath>
+#include <vector>
 
 #include "aufgabe_1.h"
 #include "hog.h"
@@ -11,6 +12,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #define CELL_SIZE 6
 #define BLOCK_SIZE 3
+#define CPW_X 10
+#define CPW_Y 20
 
 using namespace std;
 using namespace cv;
@@ -212,4 +215,83 @@ Mat scaleDownOneStep(Mat img) {
 		}
 	}
 	return img_work;
+}
+
+/* 
+Das noch untätige Gerüst  für einen Sliding Window Ansatz.
+(Aufgabe1.5)
+*/
+void slidingWindow_geruest(Mat img_arg) {
+	Mat img = img_arg.clone();
+	int width = img.cols;
+	int height = img.rows;
+	int windows_x, windows_y;
+	vector<int> dims, cropDims;
+	double ***hogCells;
+	double ***croppedCells;
+	Mat descriptor;
+
+	while (height >= 134 && width >= 70) {
+		width = img.cols;
+		height = img.rows;
+		hogCells = computeHoG(img, CELL_SIZE, dims);
+		windows_x = dims[1] - (CPW_X - 1);
+		windows_y = dims[0] - (CPW_Y - 1);
+		for (int i = 0; i < windows_y; i++) {
+			for (int j = 0; j < windows_x; j++) {
+				croppedCells = copyHOGCells(i, j, hogCells, dims, cropDims);
+				descriptor = computeWindowDescriptor(croppedCells, cropDims);
+
+				/*
+				Was auch immer hier in den nächsten Aufgaben hin soll...
+				
+				*/
+				dissolve(croppedCells, cropDims);
+			}
+		}
+		dissolve(hogCells, dims);
+		img = scaleDownOneStep(img);
+	}
+}
+
+
+/*
+Kopiert die HOG-Zellen des Fensters, das bei (y, x) beginnt und speichert die Dimensionen
+in newDims.
+*/
+double ***copyHOGCells(int y, int x, double ***hogCells, vector<int> oldDims, vector<int> &newDims) {
+	double ***copiedCells = (double ***) malloc(CPW_Y * sizeof(double **));
+	int dim_z = oldDims[2];
+	for (int i = 0; i < CPW_Y; i++) {
+		copiedCells[i] = (double **)malloc(CPW_X * sizeof(double *));
+		for (int j = 0; j < CPW_X; j++) {
+			copiedCells[i][j] = (double *)malloc(dim_z * sizeof(double));
+			for (int k = 0; k < dim_z; k++) {
+				copiedCells[i][j][k] = hogCells[y + i][x + j][k];
+			}
+		}
+	}
+	newDims = vector<int>(3);
+	newDims[2] = oldDims[2];
+	newDims[1] = CPW_X;
+	newDims[0] = CPW_X;
+	return copiedCells;
+}
+
+
+/*
+frees the space which was allocated for hogCells
+*/
+void dissolve(double ***hogCells, vector<int> dims) {
+	int dim_y = dims[0];
+	int dim_x = dims[1];
+	int dim_z = dims[2];
+
+	for (int i = 0; i < dim_y; i++) {
+		for (int j = 0; j < dim_x; j++) {
+			free((void *)hogCells[i][j]);
+		}
+		free((void **)hogCells[i]);
+	}
+	free((void ***)hogCells);
 }

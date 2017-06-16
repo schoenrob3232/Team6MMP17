@@ -40,6 +40,8 @@ int testing() {
 	imshow("Bild_skaliert4", img5);
 	Mat img6 = scaleDownOneStep(img5);
 	imshow("Bild_skaliert5", img6);
+	
+	slidingWindow_geruest(img1);
 	waitKey();
 	destroyAllWindows();
 	return 0;
