@@ -194,3 +194,22 @@ Mat computeWindowDescriptor(double ***hogCells, vector<int> dims) {
 	}
 	return descriptor;
 }
+
+Mat scaleDownOneStep(Mat img) {
+	int width = img.cols;
+	int height = img.rows;
+	double factor = pow(2.0, 0.2);
+	int width_new = ((double)width) / factor;
+	int height_new = ((double)height) / factor;
+	Vec3b col, col_new;
+
+	Mat img_work = Mat::zeros(height_new, width_new, CV_8UC3);
+	for (int i = 0; i < height_new; i++) {
+		for (int j = 0; j < width_new; j++) {
+			col = img.at<Vec3b>(i * factor, j * factor);
+			col_new = col;
+			img_work.at<Vec3b>(i, j) = col_new;
+		}
+	}
+	return img_work;
+}

@@ -17,5 +17,6 @@ bool compareToGroundTruth(Mat groundTruth, Mat potentialLocation);
 bool compareToAllGroundTruths(Mat allGroundTruths, Mat potentialLocation);
 Mat computeHOGBlock(int cell_pos_x, int cell_pos_y, int block_size, double *** hogCells, vector<int> dims);
 Mat computeWindowDescriptor(double ***hogCells, vector<int> dims);
+Mat scaleDownOneStep(Mat img);
 
 #endif
