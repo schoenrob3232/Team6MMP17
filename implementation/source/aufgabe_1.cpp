@@ -4,10 +4,13 @@
 #include <cmath>
 
 #include "aufgabe_1.h"
+#include "hog.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#define CELL_SIZE 6
+#define BLOCK_SIZE 3
 
 using namespace std;
 using namespace cv;
@@ -137,10 +140,11 @@ bool compareToAllGroundTruths(Mat allGroundTruths, Mat potentialLocation) {
 /*computes a hogblock normalized with L2-Hys*/
 Mat computeHOGBlock(int cell_pos_x, int cell_pos_y, int block_size, double *** hogCells, vector<int> dims) {
 	int block_len = block_size * block_size * dims[2];
-	Mat block = Mat::zeros(0, block_len, CV_32F);
+	Mat block = Mat::zeros(1, block_len, CV_32F);
 	int dim_z = dims[2];
 	int k = 0;
 	double sum;
+
 	//compute (raw) block
 	for (int i = cell_pos_y; i < cell_pos_y + block_size; i++) {
 		for (int j = cell_pos_x; j < cell_pos_x + block_size; j++) {
@@ -166,4 +170,27 @@ Mat computeHOGBlock(int cell_pos_x, int cell_pos_y, int block_size, double *** h
 	}
 	
 	return block;
+}
+
+/*
+Computes HOG descriptor for a whole window
+*/
+Mat computeWindowDescriptor(double ***hogCells, vector<int> dims) {
+	int blocks_y = dims[0] - (BLOCK_SIZE - 1);
+	int blocks_x = dims[1] - (BLOCK_SIZE - 1);
+	int descriptor_len = BLOCK_SIZE * BLOCK_SIZE * dims[2] * blocks_x * blocks_y;
+	Mat descriptor = Mat::zeros(1, descriptor_len, CV_32F);
+	Mat block;
+	int block_len = BLOCK_SIZE * BLOCK_SIZE * dims[2];
+	int k = 0;
+	for (int i = 0; i < blocks_y; i++) {
+		for (int j = 0; j < blocks_x; j++) {
+			block = computeHOGBlock(j, i, BLOCK_SIZE, hogCells, dims);
+			for (int l = 0; l < block_len; l++) {
+				descriptor.at<float>(0, k) = block.at<float>(0, l);
+				k++;
+			}
+		}
+	}
+	return descriptor;
 }
