@@ -41,7 +41,14 @@ int testing() {
 	Mat img6 = scaleDownOneStep(img5);
 	imshow("Bild_skaliert5", img6);
 	
-	slidingWindow_geruest(img1);
+	//slidingWindow_geruest(img1);
+	Mat groundTruth = getGroundTruth("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Train\\annotations\\crop_000010.txt");
+	Mat labels = Mat::zeros(0, 1, CV_32F);
+	Mat image = imread("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Train\\pos\\crop_000010.png");
+	cout << image.cols << endl << image.rows << endl;
+	Mat data = Mat::zeros(0, 13440, CV_32F);
+	slidingWindowGetData(image, labels, data, groundTruth);
+	cout << "x/y: " << data.cols << "/" << data.rows << endl;
 	waitKey();
 	destroyAllWindows();
 	return 0;
