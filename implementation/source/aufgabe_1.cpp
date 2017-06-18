@@ -288,7 +288,6 @@ double ***copyHOGCells(int y, int x, double ***hogCells, vector<int> oldDims, ve
 frees the space which was allocated for hogCells
 */
 void dissolve(double ***hogCells, vector<int> dims) {
-	cout << "Dissolve" << endl;
 	int dim_y = dims[0];
 	int dim_x = dims[1];
 	int dim_z = dims[2];
@@ -323,8 +322,7 @@ void slidingWindowGetData(Mat img_arg, Mat &labels_arg, Mat &data_arg, Mat groun
 	int k = 0, m = 0;
 	cout << width << endl << height << endl;
 
-	while (height >= 134 && width >= 70) {
-		cout << "scale" << endl;
+	while (height >= 142 && width >= 78) {
 		width = img.cols;
 		height = img.rows;
 		hogCells = computeHoG(img, CELL_SIZE, dims);

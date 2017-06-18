@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "aufgabe_1.h"
+#include "aufgabe_2.h"
 #include "hog.h"
 
 #include <opencv2/core/core.hpp>
@@ -47,8 +48,13 @@ int testing() {
 	Mat image = imread("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Train\\pos\\crop_000010.png");
 	cout << image.cols << endl << image.rows << endl;
 	Mat data = Mat::zeros(0, 13440, CV_32F);
-	slidingWindowGetData(image, labels, data, groundTruth);
+	//slidingWindowGetData(image, labels, data, groundTruth);
+
+
+	aquireTestTrainingData(labels, data);
+
 	cout << "x/y: " << data.cols << "/" << data.rows << endl;
+	cout << labels << endl;
 	waitKey();
 	destroyAllWindows();
 	return 0;

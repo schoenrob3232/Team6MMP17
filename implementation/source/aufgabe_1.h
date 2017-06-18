@@ -1,5 +1,5 @@
 #ifndef AUFGABE_1_H_INCLUDED
-#define AUFGSBE_1_H_INCLUDED
+#define AUFGABE_1_H_INCLUDED
 
 #include <iostream>
 #include <fstream>
