@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "aufgabe_1.h"
+#include "aufgabe_2.h"
 #include "hog.h"
 
 #include <opencv2/core/core.hpp>
@@ -40,6 +41,20 @@ int testing() {
 	imshow("Bild_skaliert4", img5);
 	Mat img6 = scaleDownOneStep(img5);
 	imshow("Bild_skaliert5", img6);
+	
+	//slidingWindow_geruest(img1);
+	Mat groundTruth = getGroundTruth("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Train\\annotations\\crop_000010.txt");
+	Mat labels = Mat::zeros(0, 1, CV_32F);
+	Mat image = imread("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Train\\pos\\crop_000010.png");
+	cout << image.cols << endl << image.rows << endl;
+	Mat data = Mat::zeros(0, 13440, CV_32F);
+	//slidingWindowGetData(image, labels, data, groundTruth);
+
+
+	aquireTestTrainingData(labels, data);
+
+	cout << "x/y: " << data.cols << "/" << data.rows << endl;
+	cout << labels << endl;
 	waitKey();
 	destroyAllWindows();
 	return 0;

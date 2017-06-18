@@ -2,6 +2,8 @@
 #include <fstream>
 #include <string>
 #include <cmath>
+#include <vector>
+#include <cstdlib>
 
 #include "aufgabe_1.h"
 #include "hog.h"
@@ -9,8 +11,10 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#define CELL_SIZE 6
-#define BLOCK_SIZE 3
+#define CELL_SIZE 8
+#define BLOCK_SIZE 2
+#define CPW_X 8
+#define CPW_Y 16
 
 using namespace std;
 using namespace cv;
@@ -183,8 +187,8 @@ Mat computeWindowDescriptor(double ***hogCells, vector<int> dims) {
 	Mat block;
 	int block_len = BLOCK_SIZE * BLOCK_SIZE * dims[2];
 	int k = 0;
-	for (int i = 0; i < blocks_y; i++) {
-		for (int j = 0; j < blocks_x; j++) {
+	for (int i = 0; i < blocks_y; i += 1) {
+		for (int j = 0; j < blocks_x; j += 1) {
 			block = computeHOGBlock(j, i, BLOCK_SIZE, hogCells, dims);
 			for (int l = 0; l < block_len; l++) {
 				descriptor.at<float>(0, k) = block.at<float>(0, l);
@@ -195,6 +199,10 @@ Mat computeWindowDescriptor(double ***hogCells, vector<int> dims) {
 	return descriptor;
 }
 
+
+/*
+scales image down by a factor of 2^(1/5)
+*/
 Mat scaleDownOneStep(Mat img) {
 	int width = img.cols;
 	int height = img.rows;
@@ -212,4 +220,167 @@ Mat scaleDownOneStep(Mat img) {
 		}
 	}
 	return img_work;
+}
+
+/* 
+Das noch untätige Gerüst  für einen Sliding Window Ansatz.
+(Aufgabe1.5)
+*/
+void slidingWindow_geruest(Mat img_arg) {
+	Mat img = img_arg.clone();
+	int width = img.cols;
+	int height = img.rows;
+	int windows_x, windows_y;
+	vector<int> dims, cropDims;
+	double ***hogCells;
+	double ***croppedCells;
+	Mat descriptor;
+
+	while (height >= 134 && width >= 70) {
+		width = img.cols;
+		height = img.rows;
+		hogCells = computeHoG(img, CELL_SIZE, dims);
+		windows_x = dims[1] - (CPW_X - 1);
+		windows_y = dims[0] - (CPW_Y - 1);
+		for (int i = 0; i < windows_y; i++) {
+			for (int j = 0; j < windows_x; j++) {
+				croppedCells = copyHOGCells(i, j, hogCells, dims, cropDims);
+				descriptor = computeWindowDescriptor(croppedCells, cropDims);
+
+				/*
+				Was auch immer hier in den nächsten Aufgaben hin soll...
+				
+				*/
+				dissolve(croppedCells, cropDims);
+			}
+		}
+		dissolve(hogCells, dims);
+		img = scaleDownOneStep(img);
+	}
+}
+
+
+/*
+Kopiert die HOG-Zellen des Fensters, das bei (y, x) beginnt und speichert die Dimensionen
+in newDims.
+*/
+double ***copyHOGCells(int y, int x, double ***hogCells, vector<int> oldDims, vector<int> &newDims) {
+	double ***copiedCells = (double ***) malloc(CPW_Y * sizeof(double **));
+	int dim_z = oldDims[2];
+	for (int i = 0; i < CPW_Y; i++) {
+		copiedCells[i] = (double **)malloc(CPW_X * sizeof(double *));
+		for (int j = 0; j < CPW_X; j++) {
+			copiedCells[i][j] = (double *)malloc(dim_z * sizeof(double));
+			for (int k = 0; k < dim_z; k++) {
+				copiedCells[i][j][k] = hogCells[y + i][x + j][k];
+			}
+		}
+	}
+	newDims = vector<int>(3);
+	newDims[2] = oldDims[2];
+	newDims[1] = CPW_X;
+	newDims[0] = CPW_Y;
+	return copiedCells;
+}
+
+
+/*
+frees the space which was allocated for hogCells
+*/
+void dissolve(double ***hogCells, vector<int> dims) {
+	int dim_y = dims[0];
+	int dim_x = dims[1];
+	int dim_z = dims[2];
+
+	for (int i = 0; i < dim_y; i++) {
+		for (int j = 0; j < dim_x; j++) {
+			free((void *)hogCells[i][j]);
+		}
+		free((void **)hogCells[i]);
+	}
+	free((void ***)hogCells);
+}
+
+
+/*
+Extrahiert traningsdaten aud dem Bild img_arg
+labels: in diesen Mat-vector werden die labels hineineschrieben
+groundTruths_ard: enthält die Ground truths
+(Aufgabe1.5)
+*/
+void slidingWindowGetData(Mat img_arg, Mat &labels_arg, Mat &data_arg, Mat groundTruths_arg) {
+	Mat groundTruths = groundTruths_arg.clone();
+	Mat img = img_arg.clone();
+	int width = img.cols;
+	int height = img.rows;
+	int windows_x, windows_y;
+	vector<int> dims, cropDims;
+	double ***hogCells;
+	double ***croppedCells;
+	Mat descriptor, labels;
+	Mat currentWindowPos;
+	int k = 0, m = 0;
+	cout << width << endl << height << endl;
+
+	while (height >= 142 && width >= 78) {
+		width = img.cols;
+		height = img.rows;
+		hogCells = computeHoG(img, CELL_SIZE, dims);
+		windows_x = dims[1] - (CPW_X - 1);
+		windows_y = dims[0] - (CPW_Y - 1);
+
+		//initializing descriptor Mat
+		int blocks_y = CPW_Y - (BLOCK_SIZE - 1);
+		int blocks_x = CPW_X - (BLOCK_SIZE - 1);
+		int descriptor_len = BLOCK_SIZE * BLOCK_SIZE * dims[2] * blocks_x * blocks_y;
+		//data.push_back(Mat::zeros(windows_x * windows_y, descriptor_len, CV_32F));
+		labels = Mat::zeros(1, 1, CV_32F);
+		
+		for (int i = 0; i < windows_y; i += 3) {
+			for (int j = 0; j < windows_x; j += 3) {
+				croppedCells = copyHOGCells(i, j, hogCells, dims, cropDims);
+				descriptor = computeWindowDescriptor(croppedCells, cropDims);
+
+				/*/cancel
+				cout << descriptor.cols << endl << descriptor_len << endl;
+				return vector<Mat>(1);*/
+
+				// adding descriptor to descriptor Mat
+				/*for (int l = 0; l < descriptor_len; l++) {
+					data[m].at<float>(k, l) = descriptor.at<float>(0, l);
+				}*/
+				data_arg.push_back(descriptor);
+				// where is the current window?
+				currentWindowPos = Mat::zeros(1, 4, CV_32S);
+				currentWindowPos.at<int>(0, 0) = 1 + j * CELL_SIZE;
+				currentWindowPos.at<int>(0, 1) = 1 + i * CELL_SIZE;
+				currentWindowPos.at<int>(0, 2) = 65 + j * CELL_SIZE;
+				currentWindowPos.at<int>(0, 3) = 129 + i * CELL_SIZE;
+
+				// does the current window fit a ground truth
+				if (compareToAllGroundTruths(groundTruths, currentWindowPos)) {
+					labels.at<float>(0, 0) = 1;
+				} else {
+					labels.at<float>(0, 0) = -1;
+				}
+				labels_arg.push_back(labels);
+
+				k++;
+				dissolve(croppedCells, cropDims);
+			}
+		}
+		dissolve(hogCells, dims);
+		k = 0;
+
+		//verkleinere groundTruths und image
+		for (int i = 0; i < groundTruths.rows; i++) {
+			groundTruths.at<int>(i, 0) = groundTruths.at<int>(i, 0) / pow(2.0, 0.2);
+			groundTruths.at<int>(i, 1) = groundTruths.at<int>(i, 1) / pow(2.0, 0.2);
+			groundTruths.at<int>(i, 2) = groundTruths.at<int>(i, 2) / pow(2.0, 0.2);
+			groundTruths.at<int>(i, 3) = groundTruths.at<int>(i, 3) / pow(2.0, 0.2);
+		}
+		img = scaleDownOneStep(img);
+		m++;
+	}
+	return;
 }
