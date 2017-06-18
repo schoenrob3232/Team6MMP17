@@ -12,6 +12,7 @@ using namespace std;
 using namespace cv;
 
 int testing();
+void training_SVM(Mat& data_container, Mat& label_container, const char* name);
 
 int main() {
 	testing();
@@ -55,6 +56,12 @@ int testing() {
 
 	cout << "x/y: " << data.cols << "/" << data.rows << endl;
 	cout << labels << endl;
+
+	Mat data_container, label_container; //Platzhalter: Diese Daten kommen irgendwoher aus deinen vorangestellten Funktionen - das habe ich spontan nicht gefunden 
+
+	training_SVM(data_container, label_container,"Classifier.xml"); //ich musste sie irgendwo mal reinschreiben
+
+
 	waitKey();
 	destroyAllWindows();
 	return 0;
