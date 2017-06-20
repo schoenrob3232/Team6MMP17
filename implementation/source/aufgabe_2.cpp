@@ -123,6 +123,4 @@ void training_SVM(Mat& data_container, Mat& label_container, const char* name) {
 	SVM.save(name);
 
 	cout << "Training finished successful! " << endl;
-
-
 }
