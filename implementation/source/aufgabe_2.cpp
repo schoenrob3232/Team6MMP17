@@ -107,3 +107,21 @@ void aquireTestTrainingData(Mat &labels_arg, Mat &data_arg) {
 		}
 	}
 }
+
+void training_SVM(Mat& data_arg, Mat& labels_arg, const char* name) {
+
+	CvSVMParams parameter;
+	CvSVM SVM;
+	parameter.svm_type = CvSVM::C_SVC;
+	parameter.kernel_type = CvSVM::LINEAR;
+	parameter.C = 0.1;
+	parameter.term_crit = cvTermCriteria(CV_TERMCRIT_ITER, (int)5e5, 1e-6);
+
+	cout << "Training in process... " << endl;
+
+	SVM.train(data_arg, labels_arg, Mat(), Mat(), parameter);
+	SVM.save(name);
+
+	cout << "Training finished successful! " << endl;
+
+}
