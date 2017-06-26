@@ -55,6 +55,14 @@ int testing() {
 
 	cout << "x/y: " << data.cols << "/" << data.rows << endl;
 	cout << labels << endl;
+	training_SVM(data, labels, "test_svm.xml");
+	Mat imagePerson = imread("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Test\\pos\\crop001501.png");
+	Mat detected = showCertainDetections(imagePerson, "test_svm.xml", 0.99);
+	cout << "detected --- " << endl;
+	imshow("Detection", detected);
+	imwrite("C:\\Users\\user\\Documents\\detection.png", detected);
+	aquireMultipleHardNegatives("test_svm.xml", labels, data);
+	cout << "x/y : " << data.cols << "/" << data.rows << endl;
 	waitKey();
 	destroyAllWindows();
 	return 0;

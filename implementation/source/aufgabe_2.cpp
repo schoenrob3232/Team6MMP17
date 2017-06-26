@@ -120,8 +120,164 @@ void training_SVM(Mat& data_arg, Mat& labels_arg, const char* name) {
 	cout << "Training in process... " << endl;
 
 	SVM.train(data_arg, labels_arg, Mat(), Mat(), parameter);
+	cout << "Saving..." << endl;
 	SVM.save(name);
 
 	cout << "Training finished successful! " << endl;
+
+}
+
+Mat showCertainDetections(Mat img_arg, const char* svm_name, double threshold) {
+	Mat img = img_arg.clone();
+	Mat img_work = img.clone();
+	int width = img.cols;
+	int height = img.rows;
+	int windows_x, windows_y;
+	vector<int> dims, cropDims;
+	double ***hogCells;
+	double ***croppedCells;
+	Mat descriptor, labels;
+	Mat currentWindowPos;
+	int k = 0, m = 0;
+	CvSVM my_svm; 
+	my_svm.load(svm_name);
+
+	while (height >= 142 && width >= 78) {
+		width = img.cols;
+		height = img.rows;
+		hogCells = computeHoG(img, CELL_SIZE, dims);
+		windows_x = dims[1] - (CPW_X - 1);
+		windows_y = dims[0] - (CPW_Y - 1);
+
+		//initializing descriptor Mat
+		int blocks_y = CPW_Y - (BLOCK_SIZE - 1);
+		int blocks_x = CPW_X - (BLOCK_SIZE - 1);
+		int descriptor_len = BLOCK_SIZE * BLOCK_SIZE * dims[2] * blocks_x * blocks_y;
+		labels = Mat::zeros(1, 1, CV_32F);
+
+		for (int i = 0; i < windows_y; i += 3) {
+			for (int j = 0; j < windows_x; j += 3) {
+				croppedCells = copyHOGCells(i, j, hogCells, dims, cropDims);
+				descriptor = computeWindowDescriptor(croppedCells, cropDims);
+				
+				// where is the current window?
+				currentWindowPos = Mat::zeros(1, 4, CV_32S);
+				currentWindowPos.at<int>(0, 0) = (8 + j * CELL_SIZE) * pow(pow(2.0, 0.2), m);
+				currentWindowPos.at<int>(0, 1) = (8 + i * CELL_SIZE) * pow(pow(2.0, 0.2), m);
+				currentWindowPos.at<int>(0, 2) = (72 + j * CELL_SIZE) * pow(pow(2.0, 0.2), m);
+				currentWindowPos.at<int>(0, 3) = (136 + i * CELL_SIZE) * pow(pow(2.0, 0.2), m);
+
+				if (my_svm.predict(descriptor, true) < -1 * threshold) {
+					Point p1(currentWindowPos.at<int>(0, 0), currentWindowPos.at<int>(0, 1));
+					Point p2(currentWindowPos.at<int>(0, 2), currentWindowPos.at<int>(0, 3));
+					Scalar green(0, 255, 0);
+					rectangle(img_work, p1, p2, green);
+				}
+
+				k++;
+				dissolve(croppedCells, cropDims);
+			}
+		}
+		dissolve(hogCells, dims);
+		k = 0;
+		img = scaleDownOneStep(img);
+		m++;
+	}
+	return img_work;
+}
+
+void aquireHardestNegative(Mat img_arg, const char* svm_name, Mat &labels_arg, Mat &data_arg, Mat groundTruths_arg) {
+	Mat groundTruths = groundTruths_arg.clone();
+	Mat img = img_arg.clone();
+	int width = img.cols;
+	int height = img.rows;
+	int windows_x, windows_y;
+	vector<int> dims, cropDims;
+	double ***hogCells;
+	double ***croppedCells;
+	Mat descriptor, labels;
+	Mat currentWindowPos;
+	int k = 0, m = 0;
+	CvSVM my_svm;
+	my_svm.load(svm_name);
+	Mat hardest_descriptor;
+	double temp_predict, minPredict = 0.0;
+
+	while (height >= 142 && width >= 78) {
+		width = img.cols;
+		height = img.rows;
+		hogCells = computeHoG(img, CELL_SIZE, dims);
+		windows_x = dims[1] - (CPW_X - 1);
+		windows_y = dims[0] - (CPW_Y - 1);
+
+		//initializing descriptor Mat
+		int blocks_y = CPW_Y - (BLOCK_SIZE - 1);
+		int blocks_x = CPW_X - (BLOCK_SIZE - 1);
+		int descriptor_len = BLOCK_SIZE * BLOCK_SIZE * dims[2] * blocks_x * blocks_y;
+		//data.push_back(Mat::zeros(windows_x * windows_y, descriptor_len, CV_32F));
+		labels = Mat::zeros(1, 1, CV_32F);
+
+		for (int i = 0; i < windows_y; i += 3) {
+			for (int j = 0; j < windows_x; j += 3) {
+				croppedCells = copyHOGCells(i, j, hogCells, dims, cropDims);
+				descriptor = computeWindowDescriptor(croppedCells, cropDims);
+
+				
+				/* where is the current window?
+				currentWindowPos = Mat::zeros(1, 4, CV_32S);
+				currentWindowPos.at<int>(0, 0) = 8 + j * CELL_SIZE;
+				currentWindowPos.at<int>(0, 1) = 8 + i * CELL_SIZE;
+				currentWindowPos.at<int>(0, 2) = 72 + j * CELL_SIZE;
+				currentWindowPos.at<int>(0, 3) = 136 + i * CELL_SIZE;*/
+
+				// does the current window fit a ground truth
+				temp_predict = my_svm.predict(descriptor, true);
+				if (!compareToAllGroundTruths(groundTruths, currentWindowPos) && (minPredict > temp_predict)) {
+					minPredict = temp_predict;
+					hardest_descriptor = descriptor;
+				}
+
+
+				k++;
+				dissolve(croppedCells, cropDims);
+			}
+		}
+		dissolve(hogCells, dims);
+		k = 0;
+
+		//verkleinere groundTruths und image
+		for (int i = 0; i < groundTruths.rows; i++) {
+			groundTruths.at<int>(i, 0) = groundTruths.at<int>(i, 0) / pow(2.0, 0.2);
+			groundTruths.at<int>(i, 1) = groundTruths.at<int>(i, 1) / pow(2.0, 0.2);
+			groundTruths.at<int>(i, 2) = groundTruths.at<int>(i, 2) / pow(2.0, 0.2);
+			groundTruths.at<int>(i, 3) = groundTruths.at<int>(i, 3) / pow(2.0, 0.2);
+		}
+		img = scaleDownOneStep(img);
+		m++;
+	}
+
+	if (minPredict < -0.5) {
+		labels.at<float>(0, 0) = -1;
+		cout << minPredict << "  :minp" << endl;
+		data_arg.push_back(hardest_descriptor);
+		labels_arg.push_back(labels);
+	}
+	return;
+}
+
+void aquireMultipleHardNegatives(const char* svm_name, Mat &labels_arg, Mat &data_arg) {
+	string line;
+	string subfolder = "train_64x128_H96\\";
+
+	ifstream fileNeg("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\train_64x128_H96\\neg.lst");
+	Mat sampleImg;
+	Mat groundTruth = Mat::zeros(0, 4, CV_32S);
+
+	while (getline(fileNeg, line)) {
+		sampleImg = imread(INRIA_PATH + subfolder + line);
+		if (!sampleImg.empty()) {
+			aquireHardestNegative(sampleImg, svm_name, labels_arg, data_arg, groundTruth);
+		}
+	}
 
 }
