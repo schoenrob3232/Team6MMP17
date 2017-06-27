@@ -55,10 +55,10 @@ void aquireRandomNegatives(Mat img_arg, Mat &labels_arg, Mat &data_arg, int n) {
 */
 void aquireSimplePositive(Mat img_arg, Mat &labels_arg, Mat &data_arg) {
 	Mat img = img_arg.clone();
-	if (img.rows == 142 && img.cols == 78) {
+	if (img.rows == 144 && img.cols == 80) {
 		// already fits
 	} else if (img.rows == 160 && img.cols == 96) {
-		Rect roi(9, 9, 78, 142);
+		Rect roi(7, 7, 80, 144);
 		img = img(roi);
 	} else {
 		cout << "Image too large. Can't find positive sample without given ground truth." << endl;
@@ -127,6 +127,11 @@ void training_SVM(Mat& data_arg, Mat& labels_arg, const char* name) {
 
 }
 
+
+/*
+Draws all detection windows found in img_arg (by svm_name) with a detection score
+higher than threshold.
+*/
 Mat showCertainDetections(Mat img_arg, const char* svm_name, double threshold) {
 	Mat img = img_arg.clone();
 	Mat img_work = img.clone();
@@ -186,6 +191,11 @@ Mat showCertainDetections(Mat img_arg, const char* svm_name, double threshold) {
 	return img_work;
 }
 
+
+/*
+Auquires the hardest negative on the Mat-Image img_arg which is misdetected by svm_name, and adds it to 
+data_arg with a negative label to labels_arg. 
+*/
 void aquireHardestNegative(Mat img_arg, const char* svm_name, Mat &labels_arg, Mat &data_arg, Mat groundTruths_arg) {
 	Mat groundTruths = groundTruths_arg.clone();
 	Mat img = img_arg.clone();
@@ -265,6 +275,11 @@ void aquireHardestNegative(Mat img_arg, const char* svm_name, Mat &labels_arg, M
 	return;
 }
 
+
+/*
+uses aquireHardestNegative to look through the whole negatives-list for hard negatives and
+adds them to data_arg // labels_arg.
+*/
 void aquireMultipleHardNegatives(const char* svm_name, Mat &labels_arg, Mat &data_arg) {
 	string line;
 	string subfolder = "train_64x128_H96\\";
