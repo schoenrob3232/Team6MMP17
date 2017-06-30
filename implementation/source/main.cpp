@@ -2,6 +2,7 @@
 
 #include "aufgabe_1.h"
 #include "aufgabe_2.h"
+#include "aufgabe_3.h"
 #include "hog.h"
 
 #include <opencv2/core/core.hpp>
@@ -12,9 +13,11 @@ using namespace std;
 using namespace cv;
 
 int testing();
+int testing2();
 
 int main() {
-	testing();
+	//testing();
+	testing2();
 	return 0;
 }
 
@@ -63,6 +66,14 @@ int testing() {
 	imwrite("C:\\Users\\user\\Documents\\detection.png", detected);
 	aquireMultipleHardNegatives("test_svm.xml", labels, data);
 	cout << "x/y : " << data.cols << "/" << data.rows << endl;
+	waitKey();
+	destroyAllWindows();
+	return 0;
+}
+
+int testing2() {
+	Mat img1 = imread("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Test\\neg\\prefecture.jpg");
+	imshow("Padded", padWithBorderPixels(img1, 40));
 	waitKey();
 	destroyAllWindows();
 	return 0;
