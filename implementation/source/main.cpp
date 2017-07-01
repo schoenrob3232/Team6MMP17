@@ -2,6 +2,7 @@
 
 #include "aufgabe_1.h"
 #include "aufgabe_2.h"
+#include "aufgabe_3.h"
 #include "hog.h"
 
 #include <opencv2/core/core.hpp>
@@ -12,9 +13,11 @@ using namespace std;
 using namespace cv;
 
 int testing();
+int testing2();
 
 int main() {
-	testing();
+	//testing();
+	testing2();
 	return 0;
 }
 
@@ -61,8 +64,28 @@ int testing() {
 	cout << "detected --- " << endl;
 	imshow("Detection", detected);
 	imwrite("C:\\Users\\user\\Documents\\detection.png", detected);
-	aquireMultipleHardNegatives("test_svm.xml", labels, data);
+	//aquireMultipleHardNegatives("test_svm.xml", labels, data);
 	cout << "x/y : " << data.cols << "/" << data.rows << endl;
+	waitKey();
+	destroyAllWindows();
+	return 0;
+}
+
+int testing2() {
+	Mat img1 = imread("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Test\\neg\\prefecture.jpg");
+	imshow("Padded", padWithBorderPixels(img1, 40));
+	Mat positions = Mat::zeros(0, 4, CV_32S);
+	Mat det_scores = Mat::zeros(0, 1, CV_32F);
+	Mat imagePerson = imread("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Test\\pos\\crop001501.png");
+	Mat groundTruth = getGroundTruth("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Test\\annotations\\crop001501.txt");
+	cout << groundTruth << endl;
+	extractDetections(imagePerson, "test_svm.xml", positions, det_scores);
+	nonMaxSuppression(positions, det_scores, 10);
+	//cout << positions << endl << det_scores << endl;
+	//sortByDetectionScore(positions, det_scores);
+	cout << positions << endl << det_scores << endl;
+	Mat results = drawResults(imagePerson, positions, groundTruth);
+	imshow("Resultate", results);
 	waitKey();
 	destroyAllWindows();
 	return 0;

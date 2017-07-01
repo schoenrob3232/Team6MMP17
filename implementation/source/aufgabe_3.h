@@ -16,5 +16,14 @@ using namespace std;
 using namespace cv;
 
 double fastComputeIoU(Mat region1, Mat region2);
+int extractDetections(Mat img_arg, const char* svm_name, Mat &positions, Mat &det_scores);
+void nonMaxSuppression(Mat &positions, Mat &det_scores, int N);
+void sortByDetectionScore(Mat &positions, Mat &det_scores);
+Mat padImgWithZeros(Mat img, int pad);
+Mat drawResults(Mat img, Mat results, Mat groundTruths);
+Mat padWithBorderPixels(Mat img, int pad);
+double computeMissRate(Mat results, Mat groundTruths);
+Mat cloneRowInt(Mat matrix, int row);
+Mat cloneRowFloat(Mat matrix, int row);
 
 #endif
