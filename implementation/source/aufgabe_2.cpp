@@ -90,7 +90,7 @@ void aquireTestTrainingData(Mat &labels_arg, Mat &data_arg) {
 	Mat sampleImg;
 	int i = 0;
 
-	while (getline(filePos, line) && i < 2000) {
+	while (getline(filePos, line) && i < 5000) {
 		sampleImg = imread(INRIA_PATH + subfolder + line);
 		if (!sampleImg.empty()) {
 			aquireSimplePositive(sampleImg, labels_arg, data_arg);
@@ -99,7 +99,7 @@ void aquireTestTrainingData(Mat &labels_arg, Mat &data_arg) {
 	}
 	
 	i = 0;
-	while (getline(fileNeg, line) && i < 200) {
+	while (getline(fileNeg, line) && i < 500) {
 		sampleImg = imread(INRIA_PATH + subfolder + line);
 		if (!sampleImg.empty()) {
 			aquireRandomNegatives(sampleImg, labels_arg, data_arg, 10);
@@ -119,7 +119,7 @@ void training_SVM(Mat& data_arg, Mat& labels_arg, const char* name) {
 
 	cout << "Training in process... " << endl;
 
-	SVM.train(data_arg, labels_arg, Mat(), Mat(), parameter);
+	SVM.train_auto(data_arg, labels_arg, Mat(), Mat(), parameter);
 	cout << "Saving..." << endl;
 	SVM.save(name);
 

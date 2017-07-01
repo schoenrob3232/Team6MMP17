@@ -165,32 +165,59 @@ void nonMaxSuppression(Mat &positions, Mat &det_scores, int N) {
 
 	//non-maximum suppression
 	sortByDetectionScore(positions, det_scores);
-	for (int i = 0; i < n && i < N; i++) {
+	cout << positions << endl << det_scores << endl;
+	/*for (int i = 0; i < n && i < N; i++) {
 		pos_temp = Mat::zeros(0, 4, CV_32S);
 		scores_temp = Mat::zeros(0, 1, CV_32F);
-		pos_temp.push_back(positions.row(i));
-		scores_temp.push_back(det_scores.row(i));
+		pos_temp.push_back(cloneRowInt(positions, i));
+		scores_temp.push_back(cloneRowFloat(det_scores, i));
 
 		for (int j = i + 1; j < n; j++) {
-			if (fastComputeIoU(positions.row(i), positions.row(j)) < 0.2) {
-				scores_temp.push_back(det_scores.row(j));
-				pos_temp.push_back(positions.row(j));
+			if (fastComputeIoU(cloneRowInt(positions, i), cloneRowInt(positions, j)) < 0.2) {
+				scores_temp.push_back(cloneRowFloat(det_scores, j));
+				pos_temp.push_back(cloneRowInt(positions, j));
 			}
 		}
 
-		positions = pos_temp;
-		det_scores = scores_temp;
+		positions = pos_temp.clone();
+		det_scores = scores_temp.clone();
 		n = positions.rows;
-	}
+	}*/
 
 	//only use top N detections at most
 	pos_temp = Mat::zeros(0, 4, CV_32S);
 	scores_temp = Mat::zeros(0, 1, CV_32F);
 	for (int i = 0; i < n && i < N; i++) {
-		pos_temp.push_back(positions.row(i));
-		scores_temp.push_back(det_scores.row(i));
+		pos_temp.push_back(cloneRowInt(positions, i));
+		scores_temp.push_back(cloneRowFloat(det_scores, i));
 	}
+	positions = pos_temp;
+	det_scores = scores_temp;
+}
 
+/*
+clones a matrix row with int format
+*/
+Mat cloneRowInt(Mat matrix, int row) {
+	int cols = matrix.cols;
+	Mat cloned_mat = Mat::zeros(1, cols, CV_32S);
+	for (int i = 0; i < cols; i++) {
+		cloned_mat.at<int>(0, i) = matrix.at<int>(row, i);
+	}
+	return cloned_mat;
+}
+
+
+/*
+clones a matrix row with float format
+*/
+Mat cloneRowFloat(Mat matrix, int row) {
+	int cols = matrix.cols;
+	Mat cloned_mat = Mat::zeros(1, cols, CV_32F);
+	for (int i = 0; i < cols; i++) {
+		cloned_mat.at<float>(0, i) = matrix.at<float>(row, i);
+	}
+	return cloned_mat;
 }
 
 
@@ -199,18 +226,21 @@ Sorts the rows of positions and det_scores according to det_scores (ascending)
 */
 void sortByDetectionScore(Mat &positions, Mat &det_scores) {
 	int n = positions.rows;
-	Mat pos; float key;
+	Mat pos = Mat::zeros(1, 4, CV_32S); 
+	float key;
 	int j;
-	for (int i = n - 2; i >= 0; i--) {
-		pos = positions.row(i);
+	for (int i = 1; i < n; i++) {
+		for (int p = 0; p < 4; p++) {
+			pos.at<int>(0, p) = positions.at<int>(i, p);
+		}
 		key = det_scores.at<float>(i, 0);
 		j = i; 
-		while (j < n-1 && key < det_scores.at<float>(j + 1, 0)) {
-			det_scores.at<float>(j, 0) = det_scores.at<float>(j + 1, 0);
+		while (j > 0 && key < det_scores.at<float>(j - 1, 0)) {
+			det_scores.at<float>(j, 0) = det_scores.at<float>(j - 1, 0);
 			for (int p = 0; p < 4; p++) {
-				positions.at<int>(j, p) = positions.at<int>(j + 1, p);
+				positions.at<int>(j, p) = positions.at<int>(j - 1, p);
 			}
-			j++;
+			j--;
 		}
 		det_scores.at<float>(j, 0) = key;
 		for (int p = 0; p < 4; p++) {
@@ -249,15 +279,15 @@ Mat drawResults(Mat img, Mat results, Mat groundTruths) {
 	int truCount = groundTruths.rows;
 
 	for (int i = 0; i < resCount; i++) {
-		Point p1(results.at<int>(0, 0), results.at<int>(0, 1));
-		Point p2(results.at<int>(0, 2), results.at<int>(0, 3));
+		Point p1(results.at<int>(i, 0), results.at<int>(i, 1));
+		Point p2(results.at<int>(i, 2), results.at<int>(i, 3));
 		Scalar green(0, 255, 0);
 		rectangle(img_work, p1, p2, green);
 	}
 
 	for (int i = 0; i < truCount; i++) {
-		Point p1(groundTruths.at<int>(0, 0), groundTruths.at<int>(0, 1));
-		Point p2(groundTruths.at<int>(0, 2), groundTruths.at<int>(0, 3));
+		Point p1(groundTruths.at<int>(i, 0), groundTruths.at<int>(i, 1));
+		Point p2(groundTruths.at<int>(i, 2), groundTruths.at<int>(i, 3));
 		Scalar red(0, 0, 255);
 		rectangle(img_work, p1, p2, red);
 	}
@@ -315,6 +345,8 @@ Mat padWithBorderPixels(Mat img, int pad) {
 
 /*
 Computes the miss rate (double in [0, 1]) out of the results and groundTruths
+
+KANN NOCH NICHT VERWENDET WERDEN (VERWENDET ZWEI FEHLERHAFTE FUNKTIONEN)!!!!!!!!!!!!!
 */
 double computeMissRate(Mat results, Mat groundTruths) {
 	int resCount = results.rows;
