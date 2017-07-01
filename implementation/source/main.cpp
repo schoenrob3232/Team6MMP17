@@ -80,12 +80,14 @@ int testing2() {
 	Mat groundTruth = getGroundTruth("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Test\\annotations\\crop001501.txt");
 	cout << groundTruth << endl;
 	extractDetections(imagePerson, "test_svm.xml", positions, det_scores);
-	nonMaxSuppression(positions, det_scores, 10);
+	nonMaxSuppression(positions, det_scores, 5);
 	//cout << positions << endl << det_scores << endl;
 	//sortByDetectionScore(positions, det_scores);
 	cout << positions << endl << det_scores << endl;
 	Mat results = drawResults(imagePerson, positions, groundTruth);
 	imshow("Resultate", results);
+	imwrite("C:\\Users\\user\\Documents\\Resultate.png", results);
+
 	waitKey();
 	destroyAllWindows();
 	return 0;

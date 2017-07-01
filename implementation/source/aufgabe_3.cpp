@@ -165,12 +165,13 @@ void nonMaxSuppression(Mat &positions, Mat &det_scores, int N) {
 
 	//non-maximum suppression
 	sortByDetectionScore(positions, det_scores);
-	cout << positions << endl << det_scores << endl;
-	/*for (int i = 0; i < n && i < N; i++) {
+	for (int i = 0; i < n && i < N; i++) {
 		pos_temp = Mat::zeros(0, 4, CV_32S);
 		scores_temp = Mat::zeros(0, 1, CV_32F);
-		pos_temp.push_back(cloneRowInt(positions, i));
-		scores_temp.push_back(cloneRowFloat(det_scores, i));
+		for (int k = 0; k <= i; k++) {
+			pos_temp.push_back(cloneRowInt(positions, k));
+			scores_temp.push_back(cloneRowFloat(det_scores, k));
+		}
 
 		for (int j = i + 1; j < n; j++) {
 			if (fastComputeIoU(cloneRowInt(positions, i), cloneRowInt(positions, j)) < 0.2) {
@@ -178,11 +179,11 @@ void nonMaxSuppression(Mat &positions, Mat &det_scores, int N) {
 				pos_temp.push_back(cloneRowInt(positions, j));
 			}
 		}
-
+		
 		positions = pos_temp.clone();
 		det_scores = scores_temp.clone();
 		n = positions.rows;
-	}*/
+	}
 
 	//only use top N detections at most
 	pos_temp = Mat::zeros(0, 4, CV_32S);
@@ -356,7 +357,7 @@ double computeMissRate(Mat results, Mat groundTruths) {
 	for (int i = 0; i < truCount; i++) {
 		bool found = false;
 		for (int j = 0; j < resCount; j++) {
-			if (fastComputeIoU(results.row(j), groundTruths.row(i)) >= 0.5) {
+			if (fastComputeIoU(cloneRowInt(results, j), cloneRowInt(groundTruths, i)) >= 0.5) {
 				found = true;
 				break;
 			}
