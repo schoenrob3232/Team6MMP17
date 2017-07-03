@@ -18,6 +18,93 @@ int testing2();
 int main() {
 	//testing();
 	testing2();
+
+	// Eingabe-Maske für die einzelnen Tasks
+	bool running = true;
+	while (running) {
+		cout << endl;
+		cout << "Please enter a number of the task you would like to execute:" << endl;
+		cout << " - 01 -- to see the ground truth boxes" << endl;
+		cout << " - 02 -- to test the sliding window" << endl;
+		cout << " - 03 -- to train the linear SVM" << endl;
+		cout << " - 04 -- to train the <> SVM" << endl; // hier <> aussagekräftigen Namen bitte einfügen für die andere
+		cout << " - 05 -- to create a classifier" << endl;
+		cout << " - 06 -- to enhance a classifier" << endl;
+		cout << " - 07 -- to analyze all pictures and save and show the results" << endl;
+		cout << " - 11 -- to calculate the data needed for the DET plot + generate x- and y-axis data" << endl;
+		cout << " - 12 -- to analyze your own picture" << endl;
+		cout << " - 00 -- to end the program" << endl;
+		cout << endl;
+
+		cout << ">>> ";
+		int task = 0;
+		cin >> task;
+		cout << endl;
+
+		switch (task) {
+		case 00: //end the program
+			{
+				running = false;
+				system("pause");
+			}
+				break;
+	
+			case 01: 
+			{
+	
+			}
+				break;
+
+			case 02:
+			{
+
+			}
+				break;
+
+			case 03: 
+			{
+
+			}
+				break;
+
+			case 04: 
+			{
+
+			}
+				break;
+
+			case 05: 
+			{
+
+			}
+				break;
+
+			case 06: 
+			{
+
+			}
+				break;
+
+			case 07: 
+			{
+
+			}
+				break;
+
+			case 11:
+			{
+
+			}
+				break;
+
+			case 12:
+			{
+
+			}
+				break;
+
+		}
+	}
 	return 0;
 }
 
