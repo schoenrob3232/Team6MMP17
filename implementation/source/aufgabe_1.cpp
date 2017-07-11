@@ -223,7 +223,7 @@ Mat scaleDownOneStep(Mat img) {
 }
 
 /* 
-Das noch untätige Gerüst  für einen Sliding Window Ansatz.
+Das noch untï¿½tige Gerï¿½st  fï¿½r einen Sliding Window Ansatz.
 (Aufgabe1.5)
 */
 void slidingWindow_geruest(Mat img_arg) {
@@ -248,7 +248,7 @@ void slidingWindow_geruest(Mat img_arg) {
 				descriptor = computeWindowDescriptor(croppedCells, cropDims);
 
 				/*
-				Was auch immer hier in den nächsten Aufgaben hin soll...
+				Was auch immer hier in den nï¿½chsten Aufgaben hin soll...
 				
 				*/
 				dissolve(croppedCells, cropDims);
@@ -305,7 +305,7 @@ void dissolve(double ***hogCells, vector<int> dims) {
 /*
 Extrahiert traningsdaten aud dem Bild img_arg
 labels: in diesen Mat-vector werden die labels hineineschrieben
-groundTruths_ard: enthält die Ground truths
+groundTruths_ard: enthï¿½lt die Ground truths
 (Aufgabe1.5)
 */
 void slidingWindowGetData(Mat img_arg, Mat &labels_arg, Mat &data_arg, Mat groundTruths_arg) {
@@ -458,7 +458,7 @@ double fastComputeIoUA1(Mat region1, Mat region2) {
 /*
 Extrahiert positiven traningsdaten aud dem Bild img_arg
 labels: in diesen Mat-vector werden die labels hineineschrieben
-groundTruths_ard: enthält die Ground truths
+groundTruths_ard: enthï¿½lt die Ground truths
 (Aufgabe1.5)
 */
 void slidingWindowGetPositives(Mat img_arg, Mat &labels_arg, Mat &data_arg, Mat groundTruths_arg) {
@@ -544,6 +544,7 @@ over IoU. Returns true, if so.
 
 */
 bool fastCompareToAllGroundTruths(Mat allGroundTruths, Mat potentialLocation, double IoU) {
+
 	Mat groundTruth = Mat::zeros(1, 4, CV_32S);
 	int truthCount = allGroundTruths.rows;
 	for (int i = 0; i < truthCount; i++) {
@@ -551,9 +552,8 @@ bool fastCompareToAllGroundTruths(Mat allGroundTruths, Mat potentialLocation, do
 			groundTruth.at<int>(0, j) = allGroundTruths.at<int>(i, j);
 		}
 
+
 		if (fastComputeIoUA1(groundTruth, potentialLocation) > IoU) {
-			cout << "Fitting with ground truth: " << fastComputeIoUA1(groundTruth, potentialLocation) << endl;
-			cout << groundTruth << endl << potentialLocation << endl;
 			return true;
 		}
 	}

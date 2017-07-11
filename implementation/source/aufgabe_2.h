@@ -23,5 +23,6 @@ Mat showCertainDetections(Mat img_arg, const char* svm_name, double threshold);
 void aquireHardestNegative(Mat img_arg, const char* svm_name, Mat &labels_arg, Mat &data_arg, Mat groundTruths_arg);
 void aquireMultipleHardNegatives(const char* svm_name, Mat &labels_arg, Mat &data_arg);
 void aquireTrainingPositives(Mat &labels_arg, Mat &data_arg);
+void aquireUltraHardNegatives(const char* svm_name, Mat &labels_arg, Mat &data_arg);
 
 #endif

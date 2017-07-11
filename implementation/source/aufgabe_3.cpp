@@ -14,7 +14,7 @@
 #include "hog.h"
 
 
-#define INRIA_PATH "C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\"
+#define INRIA_PATH "INRIAPerson/INRIAPerson/"
 #define CELL_SIZE 8
 #define BLOCK_SIZE 2
 #define CPW_X 8
@@ -417,9 +417,9 @@ computes average miss rate and fppw of the whole test set for one sigma,
 and subsequently adds these values to missRates and fppw
 */
 void computeDETPoint(Mat &fppw, Mat &missRates, const char* svm, float sigma) {
-	ifstream fileNeg("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Test\\neg.lst");
-	ifstream filePos("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Test\\pos.lst");
-	ifstream fileAnnotations("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Test\\annotations.lst");
+	ifstream fileNeg("INRIAPerson/INRIAPerson/Test/neg.lst");
+	ifstream filePos("INRIAPerson/INRIAPerson/Test/pos.lst");
+	ifstream fileAnnotations("INRIAPerson/INRIAPerson/Test/annotations.lst");
 	long allWindowsTested = 0;
 	long allFalsePositives = 0;
 	double collectedMissRates = 0.0;

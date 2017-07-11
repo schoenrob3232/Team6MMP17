@@ -21,6 +21,7 @@ void computePlotPoints(const char *svm);
 void computePlotPoints_hard_negs(const char *svm);
 void sortByXVals(Mat &x_Vals, Mat &y_Vals);
 void print_plot(Mat fppw_points, Mat missrate_points);
+void presentation();
 
 int main() {
 
@@ -35,18 +36,18 @@ int main() {
 	double wert6x = 0.004373;
 
 	double wert1y = 0.283046;
-	double wert2y = 0.283046;
-	double wert3y = 0.283046;
-	double wert4y = 0.283046;
-	double wert5y = 0.283046;
-	double wert6y = 0.283046;
+	double wert2y = 0.3;
+	double wert3y = 0.46;
+	double wert4y = 0.5;
+	double wert5y = 0.6;
+	double wert6y = 0.8;
 
-	fppw_points.at<double>(0, 0) = wert1x;
-	fppw_points.at<double>(1, 0) = wert2x;
-	fppw_points.at<double>(2, 0) = wert3x;
-	fppw_points.at<double>(3, 0) = wert4x;
-	fppw_points.at<double>(4, 0) = wert5x; 
-	fppw_points.at<double>(5, 0) = wert6x;
+	fppw_points.at<double>(0, 0) = wert6x;
+	fppw_points.at<double>(1, 0) = wert5x;
+	fppw_points.at<double>(2, 0) = wert4x;
+	fppw_points.at<double>(3, 0) = wert3x;
+	fppw_points.at<double>(4, 0) = wert2x;
+	fppw_points.at<double>(5, 0) = wert1x;
 
 	missrate_points.at<double>(0, 0) = wert1y;
 	missrate_points.at<double>(1, 0) = wert2y;
@@ -55,22 +56,27 @@ int main() {
 	missrate_points.at<double>(4, 0) = wert5y;
 	missrate_points.at<double>(5, 0) = wert6y;
 
+	sortByXVals(fppw_points, missrate_points);
+
 	print_plot(fppw_points, missrate_points);
 
 	//testing();
-	testing2();
+	//testing2();
+
+	presentation();
 	return 0;
 }
 
 
 int testing() {
+	/*
 	// Testing getGroundTruths(string filename).
 	// Filename will propably have to be changed!!
-	cout << "Ground truths from image INRIAPerson\\Test\\annotations\\crop_000005.txt" << endl;
-	cout << getGroundTruth("\\INRIAPerson\\INRIAPerson\\Test\\annotations\\crop_000005.txt") << endl;
+	cout << "Ground truths from image INRIAPerson/Test/annotations/crop_000005.txt" << endl;
+	cout << getGroundTruth("/INRIAPerson/INRIAPerson/Test/annotations/crop_000005.txt") << endl;
 
 	vector<int> dims;
-	Mat img1 = imread("\\INRIAPerson\\INRIAPerson\\Test\\neg\\prefecture.jpg");
+	Mat img1 = imread("INRIAPerson/INRIAPerson/Test/neg/prefecture.jpg");
 	double ***hogCells = computeHoG(img1, 6, dims);
 	cout << dims[0] << "/" << dims[1] << "/" << dims[2] << endl;
 	Mat testdesc = computeWindowDescriptor(hogCells, dims);
@@ -86,11 +92,11 @@ int testing() {
 	imshow("Bild_skaliert4", img5);
 	Mat img6 = scaleDownOneStep(img5);
 	imshow("Bild_skaliert5", img6);
-	
+	*/
 	//slidingWindow_geruest(img1);
-	Mat groundTruth = getGroundTruth("\\INRIAPerson\\INRIAPerson\\Train\\annotations\\crop_000010.txt");
+	Mat groundTruth = getGroundTruth("INRIAPerson/INRIAPerson/Train/annotations/crop_000010.txt");
 	Mat labels = Mat::zeros(0, 1, CV_32F);
-	Mat image = imread("\\INRIAPerson\\INRIAPerson\\Train\\pos\\crop_000010.png");
+	Mat image = imread("INRIAPerson/INRIAPerson/Train/pos/crop_000010.png");
 	cout << image.cols << endl << image.rows << endl;
 	Mat data = Mat::zeros(0, 13440, CV_32F);
 	//slidingWindowGetData(image, labels, data, groundTruth);
@@ -102,13 +108,14 @@ int testing() {
 	cout << "x/y: " << data.cols << "/" << data.rows << endl;
 	cout << labels << endl;
 	//training_SVM(data, labels, "test_svm.xml");
-	Mat imagePerson = imread("\\INRIAPerson\\INRIAPerson\\Test\\pos\\crop001501.png");
+	Mat imagePerson = imread("INRIAPerson/INRIAPerson/Test/pos/crop001501.png");
 	Mat detected = showCertainDetections(imagePerson, "test_svm.xml", 0.49);
 	cout << "detected --- " << endl;
 	imshow("Detection", detected);
-	imwrite("C:\\Users\\user\\Documents\\detection.png", detected);
+	imwrite("/home/user/Documents/detection.png", detected);
 	aquireMultipleHardNegatives("test_svm.xml", labels, data);
-	training_SVM(data, labels, "test_svm_hard_negatives.xml");
+	aquireUltraHardNegatives("test_svm.xml", labels, data);
+	training_SVM(data, labels, "svm_all_hard_negatives.xml");
 	cout << "x/y : " << data.cols << "/" << data.rows << endl;
 	waitKey();
 	destroyAllWindows();
@@ -116,16 +123,15 @@ int testing() {
 }
 
 int testing2() {
-	Mat img1 = imread("\\INRIAPerson\\INRIAPerson\\Test\\neg\\prefecture.jpg");
+	Mat img1 = imread("INRIAPerson/INRIAPerson/Test/neg/prefecture.jpg");
 	imshow("Padded", padWithBorderPixels(img1, 40));
 	Mat positions = Mat::zeros(0, 4, CV_32S);
 	Mat det_scores = Mat::zeros(0, 1, CV_32F);
-	Mat imagePerson = imread("\\INRIAPerson\\INRIAPerson\\Test\\pos\\person_265.png");
-	imagePerson = padImgWithZeros(imagePerson, 40);
-	Mat groundTruth = getGroundTruth("\INRIAPerson\\INRIAPerson\\Test\\annotations\\person_265.txt");
+	Mat imagePerson = imread("INRIAPerson/INRIAPerson/Test/pos/crop001501.png");
+	Mat groundTruth = getGroundTruth("INRIAPerson/INRIAPerson/Test/annotations/crop001501.txt");
 	cout << groundTruth << endl;
 	cout << "Zeit: 1 : " << time(NULL) << endl;
-	extractDetections(imagePerson, "linear_svm_no_hard_negatives_train_auto.xml", positions, det_scores);
+	extractDetections(imagePerson, "svm_all_hard_negatives.xml", positions, det_scores);
 	cout << "Zeit: 2 : " << time(NULL) << endl;
 	nonMaxSuppression(positions, det_scores, 10);
 	//cout << positions << endl << det_scores << endl;
@@ -133,11 +139,11 @@ int testing2() {
 	cout << positions << endl << det_scores << endl;
 	Mat results = drawResults(imagePerson, positions, groundTruth);
 	///////////////////////////////////////
-	computePlotPoints("linear_svm_no_hard_negatives_train_auto.xml");
-	computePlotPoints_hard_negs("test_svm_hard_negatives.xml");
+	//computePlotPoints("linear_svm_no_hard_negatives_train_auto.xml");
+	//computePlotPoints_hard_negs("test_svm_hard_negatives.xml");
 	///////////////////////////////////////////
 	imshow("Resultate", results);
-	imwrite("C:\\Users\\user\\Documents\\Resultate.png", results);
+	imwrite("/home/user/Documents/Resultate.png", results);
 
 	waitKey();
 	destroyAllWindows();
@@ -252,7 +258,7 @@ void sortByXVals(Mat &x_Vals, Mat &y_Vals) {
 			j--;
 		}
 		x_Vals.at<double>(j, 0) = key;
-		y_Vals.at<int>(j, 0) = pos.at<int>(0, 0);
+		y_Vals.at<double>(j, 0) = pos.at<double>(0, 0);
 		
 	}
 }
@@ -261,7 +267,7 @@ void print_plot(Mat fppw_points, Mat missrate_points) {
 	cv::Mat canvas = cv::Mat::zeros(500, 1020, CV_8UC3);
 	int thickness = 1, lineType = 8, shift = 0;
 
-	int len1 = fppw_points.rows; //missrate_points hat selbe Länge
+	int len1 = fppw_points.rows; //missrate_points hat selbe Lï¿½nge
 
 	double fppw_max = fppw_points.at<double>(0, 0);
 	double missrate_max = missrate_points.at<double>(0, 0);
@@ -286,7 +292,7 @@ void print_plot(Mat fppw_points, Mat missrate_points) {
 	float scalar_in_xRichtung = 0;
 	float scalar_in_yRichtung = 0;
 
-	//Skalierung auf ganze Breite - stimmt nicht, ist anscheinend falsch - ich werds anders lösen müssen.
+	//Skalierung auf ganze Breite - stimmt nicht, ist anscheinend falsch - ich werds anders lï¿½sen mï¿½ssen.
 	double abstandx = fppw_max;
 	scalar_in_xRichtung = (1000.0  / abstandx);
 	cout << abstandx << endl;
@@ -326,5 +332,109 @@ void print_plot(Mat fppw_points, Mat missrate_points) {
 		line(canvas, p5, p6, Scalar(0, 255, 0), thickness, lineType, shift);
 
 	imshow("DET Curve", canvas);
+	waitKey();
+}
+
+
+void presentation() {
+
+
+	Mat positions1_init = Mat::zeros(0, 4, CV_32S);
+	Mat det_scores1_init = Mat::zeros(0, 1, CV_32F);
+	Mat positions2_init = Mat::zeros(0, 4, CV_32S);
+	Mat det_scores2_init = Mat::zeros(0, 1, CV_32F);
+	Mat positions3_init = Mat::zeros(0, 4, CV_32S);
+	Mat det_scores3_init = Mat::zeros(0, 1, CV_32F);
+	Mat positions4_init = Mat::zeros(0, 4, CV_32S);
+	Mat det_scores4_init = Mat::zeros(0, 1, CV_32F);
+	Mat positions5_init = Mat::zeros(0, 4, CV_32S);
+	Mat det_scores5_init = Mat::zeros(0, 1, CV_32F);
+
+	Mat positions1_hn = Mat::zeros(0, 4, CV_32S);
+	Mat det_scores1_hn = Mat::zeros(0, 1, CV_32F);
+	Mat positions2_hn = Mat::zeros(0, 4, CV_32S);
+	Mat det_scores2_hn = Mat::zeros(0, 1, CV_32F);
+	Mat positions3_hn = Mat::zeros(0, 4, CV_32S);
+	Mat det_scores3_hn = Mat::zeros(0, 1, CV_32F);
+	Mat positions4_hn = Mat::zeros(0, 4, CV_32S);
+	Mat det_scores4_hn = Mat::zeros(0, 1, CV_32F);
+	Mat positions5_hn = Mat::zeros(0, 4, CV_32S);
+	Mat det_scores5_hn = Mat::zeros(0, 1, CV_32F);
+
+	Mat image1 = imread("INRIAPerson/INRIAPerson/Test/pos/crop001501.png");
+	Mat groundTruth1 = getGroundTruth("INRIAPerson/INRIAPerson/Test/annotations/crop001501.txt");
+	Mat image2 = imread("INRIAPerson/INRIAPerson/Test/pos/crop001670.png");
+	Mat groundTruth2 = getGroundTruth("INRIAPerson/INRIAPerson/Test/annotations/crop001670.txt");
+	Mat image3 = imread("INRIAPerson/INRIAPerson/Test/pos/person_039.png");
+	Mat groundTruth3 = getGroundTruth("INRIAPerson/INRIAPerson/Test/annotations/person_039.txt");
+	Mat image4 = imread("INRIAPerson/INRIAPerson/Test/pos/person_306.png");
+	Mat groundTruth4 = getGroundTruth("INRIAPerson/INRIAPerson/Test/annotations/person_306.txt");
+	Mat image5 = imread("INRIAPerson/INRIAPerson/Test/pos/person_and_bike_043.png");
+	Mat groundTruth5 = getGroundTruth("INRIAPerson/INRIAPerson/Test/annotations/person_and_bike_043.txt");
+
+	if (image1.empty()) {
+		cout << 1 << endl;
+	}
+	if (image2.empty()) {
+		cout << 2 << endl;
+	}
+	if (image3.empty()) {
+		cout << 3 << endl;
+	}
+	if (image4.empty()) {
+		cout << 4 << endl;
+	}
+	if (image5.empty()) {
+		cout << 5  << endl;
+	}
+
+	extractDetections(image1, "svm_all_hard_negatives.xml", positions1_hn, det_scores1_hn);
+	extractDetections(image2, "svm_all_hard_negatives.xml", positions2_hn, det_scores2_hn);
+	extractDetections(image3, "svm_all_hard_negatives.xml", positions3_hn, det_scores3_hn);
+	extractDetections(image4, "svm_all_hard_negatives.xml", positions4_hn, det_scores4_hn);
+	extractDetections(image5, "svm_all_hard_negatives.xml", positions5_hn, det_scores5_hn);
+
+
+	nonMaxSuppression(positions1_hn, det_scores1_hn, 10);
+	nonMaxSuppression(positions2_hn, det_scores2_hn, 10);
+	nonMaxSuppression(positions3_hn, det_scores3_hn, 10);
+	nonMaxSuppression(positions4_hn, det_scores4_hn, 10);
+	nonMaxSuppression(positions5_hn, det_scores5_hn, 10);
+
+	extractDetections(image1, "linear_svm_no_hard_negatives_train_auto.xml", positions1_init, det_scores1_init);
+	extractDetections(image2, "linear_svm_no_hard_negatives_train_auto.xml", positions2_init, det_scores2_init);
+	extractDetections(image3, "linear_svm_no_hard_negatives_train_auto.xml", positions3_init, det_scores3_init);
+	extractDetections(image4, "linear_svm_no_hard_negatives_train_auto.xml", positions4_init, det_scores4_init);
+	extractDetections(image5, "linear_svm_no_hard_negatives_train_auto.xml", positions5_init, det_scores5_init);
+
+
+	nonMaxSuppression(positions1_init, det_scores1_init, 10);
+	nonMaxSuppression(positions2_init, det_scores2_init, 10);
+	nonMaxSuppression(positions3_init, det_scores3_init, 10);
+	nonMaxSuppression(positions4_init, det_scores4_init, 10);
+	nonMaxSuppression(positions5_init, det_scores5_init, 10);
+
+	vector<Mat> drawings_init;
+	vector<Mat> drawings_hn;
+
+	drawings_init.push_back(drawResults(image1, positions1_init, groundTruth1));
+	drawings_init.push_back(drawResults(image2, positions2_init, groundTruth2));
+	drawings_init.push_back(drawResults(image3, positions3_init, groundTruth3));
+	drawings_init.push_back(drawResults(image4, positions4_init, groundTruth4));
+	drawings_init.push_back(drawResults(image5, positions5_init, groundTruth5));
+
+	drawings_hn.push_back(drawResults(image1, positions1_hn, groundTruth1));
+	drawings_hn.push_back(drawResults(image2, positions2_hn, groundTruth2));
+	drawings_hn.push_back(drawResults(image3, positions3_hn, groundTruth3));
+	drawings_hn.push_back(drawResults(image4, positions4_hn, groundTruth4));
+	drawings_hn.push_back(drawResults(image5, positions5_hn, groundTruth5));
+
+	for (int i = 0; i < 5; i++) {
+		imshow("Resultat - Initiale SVM" + to_string(i+1), drawings_init[i]);
+	}
+
+	for (int i = 0; i < 5; i++) {
+		imshow("Resultat - SVM mit Hard Negatives" + to_string(i+1), drawings_hn[i]);
+	}
 	waitKey();
 }
