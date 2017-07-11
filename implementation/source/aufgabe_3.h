@@ -25,5 +25,9 @@ Mat padWithBorderPixels(Mat img, int pad);
 double computeMissRate(Mat results, Mat groundTruths);
 Mat cloneRowInt(Mat matrix, int row);
 Mat cloneRowFloat(Mat matrix, int row);
+void suppressThreshold(Mat &positions, Mat &det_scores, float sigma);
+int countFalsePositives(Mat results, Mat groundTruths);
+void computeDETPoint(Mat &fppw, Mat &missRates, const char* svm, float sigma);
+
 
 #endif

@@ -22,5 +22,8 @@ void slidingWindow_geruest(Mat img_arg);
 void dissolve(double ***hogCells, vector<int> dims);
 double ***copyHOGCells(int y, int x, double ***hogCells, vector<int> oldDims, vector<int> &newDims);
 void slidingWindowGetData(Mat img_arg, Mat &labels_arg, Mat &data_arg, Mat groundTruths_arg);
+bool fastCompareToAllGroundTruths(Mat allGroundTruths, Mat potentialLocation, double IoU);
+void slidingWindowGetPositives(Mat img_arg, Mat &labels_arg, Mat &data_arg, Mat groundTruths_arg);
+double fastComputeIoUA1(Mat region1, Mat region2);
 
 #endif
