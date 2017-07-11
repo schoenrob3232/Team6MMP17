@@ -12,7 +12,7 @@
 #include "aufgabe_2.h"
 #include "hog.h"
 
-#define INRIA_PATH "C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\"
+#define INRIA_PATH "INRIAPerson/INRIAPerson/"
 #define CELL_SIZE 8
 #define BLOCK_SIZE 2
 #define CPW_X 8
@@ -82,10 +82,10 @@ FILENAME WILL HAVE TO BE CHANGED ACCORDINGLY
 */
 void aquireTestTrainingData(Mat &labels_arg, Mat &data_arg) {
 	string line;
-	string subfolder = "train_64x128_H96\\";
+	string subfolder = "train_64x128_H96/";
 
-	ifstream filePos("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\train_64x128_H96\\pos.lst");
-	ifstream fileNeg("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\train_64x128_H96\\neg.lst");
+	ifstream filePos("INRIAPerson/INRIAPerson/train_64x128_H96/pos.lst");
+	ifstream fileNeg("INRIAPerson/INRIAPerson/train_64x128_H96/neg.lst");
 	Mat sampleImg;
 	int i = 0;
 
@@ -233,16 +233,17 @@ void aquireHardestNegative(Mat img_arg, const char* svm_name, Mat &labels_arg, M
 				descriptor = computeWindowDescriptor(croppedCells, cropDims);
 
 				
-				/* where is the current window?
+				// where is the current window?
 				currentWindowPos = Mat::zeros(1, 4, CV_32S);
 				currentWindowPos.at<int>(0, 0) = 8 + j * CELL_SIZE;
 				currentWindowPos.at<int>(0, 1) = 8 + i * CELL_SIZE;
 				currentWindowPos.at<int>(0, 2) = 72 + j * CELL_SIZE;
-				currentWindowPos.at<int>(0, 3) = 136 + i * CELL_SIZE;*/
+				currentWindowPos.at<int>(0, 3) = 136 + i * CELL_SIZE;
 
 				// does the current window fit a ground truth
 				temp_predict = my_svm.predict(descriptor, true);
-				if (!compareToAllGroundTruths(groundTruths, currentWindowPos) && (minPredict > temp_predict)) {
+
+				if (!fastCompareToAllGroundTruths(groundTruths, currentWindowPos, 0.5) && (minPredict > temp_predict)) {
 					minPredict = temp_predict;
 					hardest_descriptor = descriptor;
 				}
@@ -282,9 +283,9 @@ adds them to data_arg // labels_arg.
 */
 void aquireMultipleHardNegatives(const char* svm_name, Mat &labels_arg, Mat &data_arg) {
 	string line;
-	string subfolder = "train_64x128_H96\\";
+	string subfolder = "train_64x128_H96/";
 
-	ifstream fileNeg("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\train_64x128_H96\\neg.lst");
+	ifstream fileNeg("INRIAPerson/INRIAPerson/train_64x128_H96/neg.lst");
 	Mat sampleImg;
 	Mat groundTruth = Mat::zeros(0, 4, CV_32S);
 
@@ -303,10 +304,10 @@ Aquires positive Samples according to annotations
 void aquireTrainingPositives(Mat &labels_arg, Mat &data_arg) {
 	string line;
 	string annotation_line;
-	string subfolder = "train_64x128_H96\\";
+	string subfolder = "train_64x128_H96/";
 
-	ifstream filePos("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Train\\pos.lst");
-	ifstream fileAnnotations("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Train\\annotations.lst");
+	ifstream filePos("INRIAPerson/Train/pos.lst");
+	ifstream fileAnnotations("INRIAPerson/INRIAPerson/Train/annotations.lst");
 	Mat sampleImg;
 	Mat annotation;
 	int i = 0;
@@ -324,4 +325,27 @@ void aquireTrainingPositives(Mat &labels_arg, Mat &data_arg) {
 	}
 
 	
+}
+
+
+/*
+ * Fetches hard negatives from the potive samples and puts them in labels_arg and data_ard
+ * */
+void aquireUltraHardNegatives(const char* svm_name, Mat &labels_arg, Mat &data_arg) {
+	ifstream filePos("INRIAPerson/INRIAPerson/Train/pos.lst");
+	ifstream fileAnnotations("INRIAPerson/INRIAPerson/Train/annotations.lst");
+	string line;
+	string annotation_line;
+	Mat sampleImg;
+	Mat annotation;
+
+	while (getline(filePos, line) && getline(fileAnnotations, annotation_line)) {
+		sampleImg = imread(INRIA_PATH + line);
+		annotation = getGroundTruth(INRIA_PATH + annotation_line);
+		cout << "Fetching negatives from: " << line << endl;
+		if (!sampleImg.empty() && !annotation.empty()) {
+					aquireHardestNegative(sampleImg, svm_name, labels_arg, data_arg, annotation);
+		}
+	}
+
 }
