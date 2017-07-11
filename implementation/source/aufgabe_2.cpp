@@ -69,7 +69,6 @@ void aquireSimplePositive(Mat img_arg, Mat &labels_arg, Mat &data_arg) {
 	Mat sampleDeskriptor;
 	Mat positiveLabel = Mat::zeros(1, 1, CV_32F);
 	double ***hogCells = computeHoG(img, CELL_SIZE, dims); 
-	cout << dims[0] << "/" << dims[1] << endl;
 	sampleDeskriptor = computeWindowDescriptor(hogCells, dims);
 	data_arg.push_back(sampleDeskriptor);
 	positiveLabel.at<float>(0, 0) = 1;
@@ -114,8 +113,9 @@ void training_SVM(Mat& data_arg, Mat& labels_arg, const char* name) {
 	CvSVM SVM;
 	parameter.svm_type = CvSVM::C_SVC;
 	parameter.kernel_type = CvSVM::LINEAR;
+	//parameter.degree = 6;
 	parameter.C = 0.1;
-	parameter.term_crit = cvTermCriteria(CV_TERMCRIT_ITER, (int)5e5, 1e-6);
+	parameter.term_crit = cvTermCriteria(CV_TERMCRIT_ITER, (int)50000, 1e-6);
 
 	cout << "Training in process... " << endl;
 
@@ -295,4 +295,33 @@ void aquireMultipleHardNegatives(const char* svm_name, Mat &labels_arg, Mat &dat
 		}
 	}
 
+}
+
+/*
+Aquires positive Samples according to annotations
+*/
+void aquireTrainingPositives(Mat &labels_arg, Mat &data_arg) {
+	string line;
+	string annotation_line;
+	string subfolder = "train_64x128_H96\\";
+
+	ifstream filePos("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Train\\pos.lst");
+	ifstream fileAnnotations("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Train\\annotations.lst");
+	Mat sampleImg;
+	Mat annotation;
+	int i = 0;
+
+	while (getline(filePos, line) && getline(fileAnnotations, annotation_line) && i < 200) {
+		cout << "Fetching annotated positive: " << i << endl;
+		sampleImg = imread(INRIA_PATH + line);
+		annotation = getGroundTruth(INRIA_PATH + annotation_line);
+
+		if (!sampleImg.empty()) {
+			slidingWindowGetPositives(sampleImg, labels_arg, data_arg, annotation);
+			i++;
+		}
+		cout << "Current size of training set: " << data_arg.rows << endl;
+	}
+
+	
 }

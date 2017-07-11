@@ -132,9 +132,9 @@ bool compareToAllGroundTruths(Mat allGroundTruths, Mat potentialLocation) {
 	for (int i = 0; i < truthCount; i++) {
 		for (int j = 0; j < 4; j++) {
 			groundTruth.at<int>(0, j) = allGroundTruths.at<int>(i, j);
-			if (compareToGroundTruth(groundTruth, potentialLocation)) {
-				return true;
-			}
+		}
+		if (compareToGroundTruth(groundTruth, potentialLocation)) {
+			return true;
 		}
 	}
 	return false;
@@ -384,3 +384,179 @@ void slidingWindowGetData(Mat img_arg, Mat &labels_arg, Mat &data_arg, Mat groun
 	}
 	return;
 }
+
+
+/*
+Computes Intersection over Union in O(1) for regions with:
+region.at<int>(0, 0) = x1
+region.at<int>(0, 1) = y1
+region.at<int>(0, 2) = x2
+region.at<int>(0, 3) = y2
+and x1 < x2 and y1 < y2
+Example
+| x1	   | y1		 | x2	   | y2
+____________ | _______ | _______ | _______ | _______
+region1		 | 24	   | 1		 | 170	   | 503
+region2		 | 39	   | 44		 | 102	   | 432
+*/
+double fastComputeIoUA1(Mat region1, Mat region2) {
+	int x1_loc1 = region1.at<int>(0, 0);
+	int y1_loc1 = region1.at<int>(0, 1);
+	int x2_loc1 = region1.at<int>(0, 2);
+	int y2_loc1 = region1.at<int>(0, 3);
+
+	int x1_loc2 = region2.at<int>(0, 0);
+	int y1_loc2 = region2.at<int>(0, 1);
+	int x2_loc2 = region2.at<int>(0, 2);
+	int y2_loc2 = region2.at<int>(0, 3);
+
+	int x_overlap, y_overlap, intersection, the_union;
+	double intersectionOverUnion;
+
+	//compute x-Axis overlap
+	if (x1_loc1 > x2_loc2 || x2_loc1 < x1_loc2) {
+		x_overlap = 0;
+	}
+	else if (x1_loc1 <= x1_loc2 && x2_loc2 <= x2_loc1) {
+		x_overlap = x2_loc2 - x1_loc2;
+	}
+	else if (x1_loc2 <= x1_loc1 && x2_loc1 <= x2_loc2) {
+		x_overlap = x2_loc1 - x1_loc1;
+	}
+	else if (x1_loc1 <= x1_loc2 && x2_loc1 <= x2_loc2) {
+		x_overlap = x2_loc1 - x1_loc2;
+	}
+	else if (x1_loc2 <= x1_loc1 && x2_loc2 <= x2_loc1) {
+		x_overlap = x2_loc2 - x1_loc1;
+	}
+
+	//compute Y-Axis overlap
+	if (y1_loc1 > y2_loc2 || y2_loc1 < y1_loc2) {
+		y_overlap = 0;
+	}
+	else if (y1_loc1 <= y1_loc2 && y2_loc2 <= y2_loc1) {
+		y_overlap = y2_loc2 - y1_loc2;
+	}
+	else if (y1_loc2 <= y1_loc1 && y2_loc1 <= y2_loc2) {
+		y_overlap = y2_loc1 - y1_loc1;
+	}
+	else if (y1_loc1 <= y1_loc2 && y2_loc1 <= y2_loc2) {
+		y_overlap = y2_loc1 - y1_loc2;
+	}
+	else if (y1_loc2 <= y1_loc1 && y2_loc2 <= y2_loc1) {
+		y_overlap = y2_loc2 - y1_loc1;
+	}
+
+	intersection = x_overlap * y_overlap;
+	the_union = (x2_loc1 - x1_loc1) * (y2_loc1 - y1_loc1) + (x2_loc2 - x1_loc2) * (y2_loc2 - y1_loc2) - intersection;
+	intersectionOverUnion = ((double)intersection) / ((double)the_union);
+	return intersectionOverUnion;
+}
+
+
+
+/*
+Extrahiert positiven traningsdaten aud dem Bild img_arg
+labels: in diesen Mat-vector werden die labels hineineschrieben
+groundTruths_ard: enthält die Ground truths
+(Aufgabe1.5)
+*/
+void slidingWindowGetPositives(Mat img_arg, Mat &labels_arg, Mat &data_arg, Mat groundTruths_arg) {
+	Mat groundTruths = groundTruths_arg.clone();
+	Mat img = img_arg.clone();
+	int width = img.cols;
+	int height = img.rows;
+	int windows_x, windows_y;
+	vector<int> dims, cropDims;
+	double ***hogCells;
+	double ***croppedCells;
+	Mat descriptor, labels;
+	Mat currentWindowPos;
+	int k = 0, m = 0;
+	cout << width << endl << height << endl;
+
+	while (height >= 144 && width >= 80) {
+		width = img.cols;
+		height = img.rows;
+		hogCells = computeHoG(img, CELL_SIZE, dims);
+		windows_x = dims[1] - (CPW_X - 1);
+		windows_y = dims[0] - (CPW_Y - 1);
+
+		//initializing descriptor Mat
+		int blocks_y = CPW_Y - (BLOCK_SIZE - 1);
+		int blocks_x = CPW_X - (BLOCK_SIZE - 1);
+		int descriptor_len = BLOCK_SIZE * BLOCK_SIZE * dims[2] * blocks_x * blocks_y;
+		//data.push_back(Mat::zeros(windows_x * windows_y, descriptor_len, CV_32F));
+		labels = Mat::zeros(1, 1, CV_32F);
+
+		for (int i = 0; i < windows_y; i += 1) {
+			for (int j = 0; j < windows_x; j += 1) {
+				croppedCells = copyHOGCells(i, j, hogCells, dims, cropDims);
+				descriptor = computeWindowDescriptor(croppedCells, cropDims);
+
+				/*/cancel
+				cout << descriptor.cols << endl << descriptor_len << endl;
+				return vector<Mat>(1);*/
+
+				// adding descriptor to descriptor Mat
+				/*for (int l = 0; l < descriptor_len; l++) {
+				data[m].at<float>(k, l) = descriptor.at<float>(0, l);
+				}*/
+				// where is the current window?
+				currentWindowPos = Mat::zeros(1, 4, CV_32S);
+				currentWindowPos.at<int>(0, 0) = (8 + j * CELL_SIZE) * pow(pow(2.0, 0.2), m);
+				currentWindowPos.at<int>(0, 1) = (8 + i * CELL_SIZE) * pow(pow(2.0, 0.2), m);
+				currentWindowPos.at<int>(0, 2) = (72 + j * CELL_SIZE) * pow(pow(2.0, 0.2), m);
+				currentWindowPos.at<int>(0, 3) = (136 + i * CELL_SIZE) * pow(pow(2.0, 0.2), m);
+
+				// does the current window fit a ground truth
+				if (fastCompareToAllGroundTruths(groundTruths, currentWindowPos, 0.75) == 1) {
+					data_arg.push_back(descriptor);
+					labels.at<float>(0, 0) = 1;
+					labels_arg.push_back(labels);
+					cout << "Added!" << endl;
+				}
+
+				k++;
+				dissolve(croppedCells, cropDims);
+			}
+		}
+		dissolve(hogCells, dims);
+		k = 0;
+
+		//verkleinere groundTruths und image
+		for (int i = 0; i < groundTruths.rows; i++) {
+			groundTruths.at<int>(i, 0) = groundTruths.at<int>(i, 0) / pow(2.0, 0.2);
+			groundTruths.at<int>(i, 1) = groundTruths.at<int>(i, 1) / pow(2.0, 0.2);
+			groundTruths.at<int>(i, 2) = groundTruths.at<int>(i, 2) / pow(2.0, 0.2);
+			groundTruths.at<int>(i, 3) = groundTruths.at<int>(i, 3) / pow(2.0, 0.2);
+		}
+		img = scaleDownOneStep(img);
+		m++;
+	}
+	return;
+}
+
+/*
+Checks if the proposed location fits at least one ground
+truth in the image (as returned by the method getGroundTruth(string filename))
+over IoU. Returns true, if so.
+
+*/
+bool fastCompareToAllGroundTruths(Mat allGroundTruths, Mat potentialLocation, double IoU) {
+	Mat groundTruth = Mat::zeros(1, 4, CV_32S);
+	int truthCount = allGroundTruths.rows;
+	for (int i = 0; i < truthCount; i++) {
+		for (int j = 0; j < 4; j++) {
+			groundTruth.at<int>(0, j) = allGroundTruths.at<int>(i, j);
+		}
+
+		if (fastComputeIoUA1(groundTruth, potentialLocation) > IoU) {
+			cout << "Fitting with ground truth: " << fastComputeIoUA1(groundTruth, potentialLocation) << endl;
+			cout << groundTruth << endl << potentialLocation << endl;
+			return true;
+		}
+	}
+	return false;
+}
+

@@ -138,7 +138,7 @@ int extractDetections(Mat img_arg, const char* svm_name, Mat &positions, Mat &de
 				window_count++;
 
 				det_score.at<float>(0, 0) = my_svm.predict(descriptor, true);
-				if (my_svm.predict(descriptor, true) < 0.0) {
+				if (det_score.at<float>(0, 0) < 0.0) {
 					positions.push_back(currentWindowPos);
 					det_scores.push_back(det_score);
 
@@ -368,3 +368,106 @@ double computeMissRate(Mat results, Mat groundTruths) {
 	}
 	return ((double)missed / (double)truCount);
 }
+
+
+/*
+Eliminates every detection form positions and det_scores with a detection score >= sigma
+*/
+void suppressThreshold(Mat &positions, Mat &det_scores, float sigma) {
+	Mat pos_temp = Mat::zeros(0, 4, CV_32S);
+	Mat scores_temp = Mat::zeros(0, 1, CV_32F);
+	int n = positions.rows;
+
+	for (int i = 0; i < n; i++) {
+		if (det_scores.at<float>(i, 0) < sigma) {
+			pos_temp.push_back(cloneRowInt(positions, i));
+			scores_temp.push_back(cloneRowFloat(det_scores, i));
+		}
+	}
+	positions = pos_temp;
+	det_scores = scores_temp;
+}
+
+
+/*
+counts the false positives in results (those who do not fit to anything in groundTruths)
+*/
+int countFalsePositives(Mat results, Mat groundTruths) {
+	int resCount = results.rows;
+	int truCount = groundTruths.rows;
+	int falsePos = 0;
+
+	for (int i = 0; i < resCount; i++) {
+		bool found = false;
+		for (int j = 0; j < truCount; j++) {
+			if (fastComputeIoU(cloneRowInt(results, i), cloneRowInt(groundTruths, j)) >= 0.5) {
+				found = true;
+				break;
+			}
+		}
+		if (found == false) {
+			falsePos++;
+		}
+	}
+	return falsePos;
+}
+
+/*
+computes average miss rate and fppw of the whole test set for one sigma, 
+and subsequently adds these values to missRates and fppw
+*/
+void computeDETPoint(Mat &fppw, Mat &missRates, const char* svm, float sigma) {
+	ifstream fileNeg("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Test\\neg.lst");
+	ifstream filePos("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Test\\pos.lst");
+	ifstream fileAnnotations("C:\\Users\\user\\Documents\\Uni\\MMP\\INRIAPerson\\INRIAPerson\\Test\\annotations.lst");
+	long allWindowsTested = 0;
+	long allFalsePositives = 0;
+	double collectedMissRates = 0.0;
+	int scannedImages = 0;
+	String line, annotation;
+	Mat sampleImg;
+	Mat positions = Mat::zeros(0, 4, CV_32S);
+	Mat det_scores = Mat::zeros(0, 1, CV_32F);
+	Mat new_fppw = Mat::zeros(1, 1, CV_64F);
+	Mat new_missrate = Mat::zeros(1, 1, CV_64F);
+	Mat groundTruths;
+
+	while (getline(filePos, line) && getline(fileAnnotations, annotation)) {
+		cout << "Scanning: " << line << endl;
+		sampleImg = imread(INRIA_PATH + line);
+		groundTruths = getGroundTruth(INRIA_PATH + annotation);
+		if (!sampleImg.empty()) {
+			positions = Mat::zeros(0, 4, CV_32S);
+			det_scores = Mat::zeros(0, 1, CV_32F);
+			allWindowsTested += extractDetections(sampleImg, svm, positions, det_scores);
+			nonMaxSuppression(positions, det_scores, 10);
+			suppressThreshold(positions, det_scores, sigma);
+
+			allFalsePositives += countFalsePositives(positions, groundTruths);
+			collectedMissRates += computeMissRate(positions, groundTruths);
+			scannedImages++;
+			
+		}
+	}
+
+	while (getline(fileNeg, line)) {
+		cout << "Scanning: " << line << endl;
+		sampleImg = imread(INRIA_PATH + line);
+		if (!sampleImg.empty()) {
+			positions = Mat::zeros(0, 4, CV_32S);
+			det_scores = Mat::zeros(0, 1, CV_32F);
+			allWindowsTested += extractDetections(sampleImg, svm, positions, det_scores);
+			nonMaxSuppression(positions, det_scores, 10);
+			suppressThreshold(positions, det_scores, sigma);
+
+			allFalsePositives += positions.rows;
+			scannedImages++;
+		}
+	}
+	new_fppw.at<double>(0, 0) = ((double)allFalsePositives) / ((double)allWindowsTested);
+	new_missrate.at<double>(0, 0) = ((double)collectedMissRates) / ((double)scannedImages);
+	fppw.push_back(new_fppw);
+	missRates.push_back(new_missrate);
+}
+
+
