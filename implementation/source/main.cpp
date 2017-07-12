@@ -19,14 +19,15 @@ int testing();
 int testing2();
 void computePlotPoints(const char *svm);
 void computePlotPoints_hard_negs(const char *svm);
-void sortByXVals(Mat &x_Vals, Mat &y_Vals);
-void print_plot(Mat fppw_points, Mat missrate_points);
+void sortByXVals(Mat &x_Vals, Mat &y_Vals); 
+void print_plot(Mat fppw_points, Mat missrate_points, string name, int blue, int green, int red);
 void presentation();
 
 int main() {
 
+	//Test für Plot
 	Mat fppw_points = Mat::zeros(6, 1, CV_64F);
-	Mat missrate_points = Mat::zeros(6, 1,  CV_64F);
+	Mat missrate_points = Mat::zeros(6, 1, CV_64F);
 
 	double wert1x = 0.000850;
 	double wert2x = 0.001234;
@@ -36,18 +37,18 @@ int main() {
 	double wert6x = 0.004373;
 
 	double wert1y = 0.283046;
-	double wert2y = 0.3;
-	double wert3y = 0.46;
-	double wert4y = 0.5;
-	double wert5y = 0.6;
-	double wert6y = 0.8;
+	double wert2y = 0.283046;
+	double wert3y = 0.283046;
+	double wert4y = 0.283046;
+	double wert5y = 0.283046;
+	double wert6y = 0.283046;
 
-	fppw_points.at<double>(0, 0) = wert6x;
-	fppw_points.at<double>(1, 0) = wert5x;
-	fppw_points.at<double>(2, 0) = wert4x;
-	fppw_points.at<double>(3, 0) = wert3x;
-	fppw_points.at<double>(4, 0) = wert2x;
-	fppw_points.at<double>(5, 0) = wert1x;
+	fppw_points.at<double>(0, 0) = wert1x;
+	fppw_points.at<double>(1, 0) = wert2x;
+	fppw_points.at<double>(2, 0) = wert3x;
+	fppw_points.at<double>(3, 0) = wert4x;
+	fppw_points.at<double>(4, 0) = wert5x;
+	fppw_points.at<double>(5, 0) = wert6x;
 
 	missrate_points.at<double>(0, 0) = wert1y;
 	missrate_points.at<double>(1, 0) = wert2y;
@@ -56,9 +57,9 @@ int main() {
 	missrate_points.at<double>(4, 0) = wert5y;
 	missrate_points.at<double>(5, 0) = wert6y;
 
-	sortByXVals(fppw_points, missrate_points);
-
-	print_plot(fppw_points, missrate_points);
+	int blue = 0, green = 255, red = 0;
+	string name = "DET Curve";
+	print_plot(fppw_points, missrate_points, name, blue, green, red);
 
 	//testing();
 	//testing2();
@@ -157,7 +158,7 @@ computes multiple DET points for SVM trained without hard negatives
 void computePlotPoints(const char *svm) {
 	Mat fppw_points = Mat::zeros(0, 1, CV_64F);
 	Mat missrate_points = Mat::zeros(0, 1, CV_64F);
-	float sigma = 0.0; 
+	float sigma = 0.0;
 	while (sigma >= -1.0) {
 		cout << "Computing for sigma = " << sigma << endl;
 		computeDETPoint(fppw_points, missrate_points, svm, sigma);
@@ -166,15 +167,16 @@ void computePlotPoints(const char *svm) {
 	}
 	sortByXVals(fppw_points, missrate_points);
 
+	// save values in .txt to be safe
 	ofstream file_m, file_f;
 	file_m.open("y_value.txt", std::ios_base::app);
 	file_f.open("x_value.txt", std::ios_base::app);
 
-	for (int i = 0; i < fppw_points.rows; i++) 
+	for (int i = 0; i < fppw_points.rows; i++)
 	{
 		file_f << to_string(fppw_points.at<double>(i, 0)) << endl;
 	}
-	
+
 	for (int i = 0; i < missrate_points.rows; i++)
 	{
 		file_m << to_string(missrate_points.at<double>(i, 0)) << endl;
@@ -183,16 +185,14 @@ void computePlotPoints(const char *svm) {
 	file_m.close();
 	file_f.close();
 
-
 	// python script to plot the data
 	//system("py plot_script.py"); //findet python36.lib nicht
 
 	//plot mit opencv:
-	// kommt noch, weil python leider etwa sspackt -
-
+	string name = "DET Curve without hard negatives";
+	int blue = 0, green = 255, red = 0;
+	print_plot(fppw_points, missrate_points, name, blue, green, red);
 }
-
-
 
 /*
 computes multiple DET points for SVM trained with hard negatives
@@ -208,9 +208,8 @@ void computePlotPoints_hard_negs(const char *svm) {
 		cout << "Computed!" << endl;
 	}
 	sortByXVals(fppw_points, missrate_points);
-	
-	
-	///// evtl sinnlos, wenns gleich mit der Matrix funktioniert!
+
+	// save values in .txt to be safe
 	ofstream file_m, file_f;
 	file_m.open("y_value_neg.txt", std::ios_base::app);
 	file_f.open("x_value_neg.txt", std::ios_base::app);
@@ -227,18 +226,15 @@ void computePlotPoints_hard_negs(const char *svm) {
 
 	file_m.close();
 	file_f.close();
-	/////////////////////////////////
-
 
 	// python script to plot the data
 	//system("py plot_script.py"); //findet python36.lib nicht
 
 	//plot mit opencv:
-	// kommt noch, weil python leider etwas spackt -
-	// auch noch ohne Achsenbeschriftung
-	print_plot(fppw_points, missrate_points);
+	string name = "DET Curve with hard negatives";
+	int blue = 0, green = 0, red = 255;
+	print_plot(fppw_points, missrate_points, name, blue, green, red);
 }
-
 
 /*
 Sorts the rows of x_Vals and y_Vals according to x_Vals (ascending)
@@ -259,25 +255,25 @@ void sortByXVals(Mat &x_Vals, Mat &y_Vals) {
 		}
 		x_Vals.at<double>(j, 0) = key;
 		y_Vals.at<double>(j, 0) = pos.at<double>(0, 0);
-		
 	}
 }
 
-void print_plot(Mat fppw_points, Mat missrate_points) {
-	cv::Mat canvas = cv::Mat::zeros(500, 1020, CV_8UC3);
-	int thickness = 1, lineType = 8, shift = 0;
+void print_plot(Mat fppw_points, Mat missrate_points, string name, int blue, int green, int red)
+{
+	cv::Mat canvas = cv::Mat::zeros(500, 1150, CV_8UC3);
+	int thickness = 1, lineType = 8, shift = 0, fontFace = FONT_HERSHEY_SCRIPT_SIMPLEX;
+	double fontScale = 0.5;
 
-	int len1 = fppw_points.rows; //missrate_points hat selbe L�nge
+	int len1 = fppw_points.rows; //missrate_points hat selbe Länge
 
+	// scaling the graph to the whole image width/height
 	double fppw_max = fppw_points.at<double>(0, 0);
 	double missrate_max = missrate_points.at<double>(0, 0);
 
 	for (int i = 1; i < len1; i++) {
 		if (fppw_max < fppw_points.at<double>(i, 0)) {
 			fppw_max = fppw_points.at<double>(i, 0);
-			cout << fppw_max << endl;
 		}
-
 	}
 
 	for (int i = 1; i < len1; i++) {
@@ -286,58 +282,117 @@ void print_plot(Mat fppw_points, Mat missrate_points) {
 		}
 	}
 
-	/*double x_pointList[1][6] = { 0.000850, 0.001234, 0.001756, 0.002517, 0.003389, 0.004373 },
-		y_pointList[1][6] = { 0.283046,0.283046,0.283046,0.283046,0.283046,0.283046 };*/
+	float scalar_in_xRichtung = 0, scalar_in_yRichtung = 0;
 
-	float scalar_in_xRichtung = 0;
-	float scalar_in_yRichtung = 0;
+	/*double wert_x = compare(fppw_max, fppw_max_negs);
+	cout << wert_x << endl;
+	double wert_y = compare(missrate_max, missrate_max_negs);
+	cout << wert_y << endl;*/
 
-	//Skalierung auf ganze Breite - stimmt nicht, ist anscheinend falsch - ich werds anders l�sen m�ssen.
 	double abstandx = fppw_max;
-	scalar_in_xRichtung = (1000.0  / abstandx);
-	cout << abstandx << endl;
-	cout << scalar_in_xRichtung << endl;
+	scalar_in_xRichtung = (1000.0 / abstandx);
 
 	double abstandy = missrate_max;
 	scalar_in_yRichtung = 240.0 / abstandy;
-	cout << fppw_points.at<double>(0, 0) << endl;
-	cout << fppw_points.at<double>(1, 0) << endl;
-	cout << fppw_points.at<double>(2, 0) << endl;
-	cout << fppw_points.at<double>(3, 0) << endl;
-	cout << fppw_points.at<double>(4, 0) << endl;
-	cout << fppw_points.at<double>(5, 0) << endl;
 
-	Point p1 = Point((scalar_in_xRichtung*(fppw_points.at<double>(0,0)) + 10), 250 - scalar_in_yRichtung*(missrate_points.at<double>(0,0)));
-	Point p2 = Point((scalar_in_xRichtung*(fppw_points.at<double>(1,0)) + 10), 250 - scalar_in_yRichtung*(missrate_points.at<double>(1,0)));
-	Point p3 = Point((scalar_in_xRichtung*(fppw_points.at<double>(2,0)) + 10), 250 - scalar_in_yRichtung*(missrate_points.at<double>(2,0)));
-	Point p4 = Point((scalar_in_xRichtung*(fppw_points.at<double>(3,0)) + 10), 250 - scalar_in_yRichtung*(missrate_points.at<double>(3,0)));
-	Point p5 = Point((scalar_in_xRichtung*(fppw_points.at<double>(4,0)) + 10), 250 - scalar_in_yRichtung*(missrate_points.at<double>(4,0)));
-	Point p6 = Point((scalar_in_xRichtung*(fppw_points.at<double>(5,0)) + 10), 250 - scalar_in_yRichtung*(missrate_points.at<double>(5,0)));
+	// generating the points 
+	Point p1 = Point((scalar_in_xRichtung*(fppw_points.at<double>(0, 0)) + 100), 250 - scalar_in_yRichtung*(missrate_points.at<double>(0, 0)));
+	Point p2 = Point((scalar_in_xRichtung*(fppw_points.at<double>(1, 0)) + 100), 250 - scalar_in_yRichtung*(missrate_points.at<double>(1, 0)));
+	Point p3 = Point((scalar_in_xRichtung*(fppw_points.at<double>(2, 0)) + 100), 250 - scalar_in_yRichtung*(missrate_points.at<double>(2, 0)));
+	Point p4 = Point((scalar_in_xRichtung*(fppw_points.at<double>(3, 0)) + 100), 250 - scalar_in_yRichtung*(missrate_points.at<double>(3, 0)));
+	Point p5 = Point((scalar_in_xRichtung*(fppw_points.at<double>(4, 0)) + 100), 250 - scalar_in_yRichtung*(missrate_points.at<double>(4, 0)));
+	Point p6 = Point((scalar_in_xRichtung*(fppw_points.at<double>(5, 0)) + 100), 250 - scalar_in_yRichtung*(missrate_points.at<double>(5, 0)));
 
-	rectangle(canvas, Point(10, 0), Point(10, 500), Scalar(255, 255, 255), thickness, lineType, shift); //y Achse
-	rectangle(canvas, Point(10, 500), Point(1020, 250), Scalar(255, 255, 255), thickness, lineType, shift); //x Achse
-	//line(canvas, Point(10, 0), Point(10, 500), Scalar(255, 255, 255), thickness, lineType, shift);
+	/*Point p1_n = Point((scalar_in_xRichtung*(fppw_points.at<double>(0, 0)) + 10), 250 - scalar_in_yRichtung*(missrate_points.at<double>(0, 0)));
+	Point p2_n = Point((scalar_in_xRichtung*(fppw_points.at<double>(1, 0)) + 10), 250 - scalar_in_yRichtung*(missrate_points.at<double>(1, 0)));
+	Point p3_n = Point((scalar_in_xRichtung*(fppw_points.at<double>(2, 0)) + 10), 250 - scalar_in_yRichtung*(missrate_points.at<double>(2, 0)));
+	Point p4_n = Point((scalar_in_xRichtung*(fppw_points.at<double>(3, 0)) + 10), 250 - scalar_in_yRichtung*(missrate_points.at<double>(3, 0)));
+	Point p5_n = Point((scalar_in_xRichtung*(fppw_points.at<double>(4, 0)) + 10), 250 - scalar_in_yRichtung*(missrate_points.at<double>(4, 0)));
+	Point p6_n = Point((scalar_in_xRichtung*(fppw_points.at<double>(5, 0)) + 10), 250 - scalar_in_yRichtung*(missrate_points.at<double>(5, 0)));*/
 
-	//malen des Graphen
-	circle(canvas, p1, 3, Scalar(0, 255, 0), -1);
-	circle(canvas, p2, 3, Scalar(0, 255, 0), -1);
-		line(canvas, p1, p2, Scalar(0, 255, 0), thickness, lineType, shift);
-	circle(canvas, p3, 3, Scalar(0, 255, 0), -1);
-		line(canvas, p2, p3, Scalar(0, 255, 0), thickness, lineType, shift);
-	circle(canvas, p4, 3, Scalar(0, 255, 0), -1);
-		line(canvas, p3, p4, Scalar(0, 255, 0), thickness, lineType, shift);
-	circle(canvas, p5, 3, Scalar(0, 255, 0), -1);
-		line(canvas, p4, p5, Scalar(0, 255, 0), thickness, lineType, shift);
-	circle(canvas, p6, 3, Scalar(0, 255, 0), -1);
-		line(canvas, p5, p6, Scalar(0, 255, 0), thickness, lineType, shift);
+	//Axes
+	line(canvas, Point(100, 0), Point(100, 500), Scalar(255, 255, 255), thickness, lineType, shift);//y Achse
+	line(canvas, Point(100, 250), Point(1140, 250), Scalar(255, 255, 255), thickness, lineType, shift);//x Achse
 
-	imshow("DET Curve", canvas);
+	//Numbers on the Axes
+	string x1 = to_string(fppw_points.at<double>(0, 0));
+	string x2 = to_string(fppw_points.at<double>(1, 0));
+	string x3 = to_string(fppw_points.at<double>(2, 0));
+	string x4 = to_string(fppw_points.at<double>(3, 0));
+	string x5 = to_string(fppw_points.at<double>(4, 0));
+	string x6 = to_string(fppw_points.at<double>(5, 0));
+
+	//text on x axis
+	putText(canvas, x1, Point((scalar_in_xRichtung*(fppw_points.at<double>(0, 0)) + 65), 265), fontFace, fontScale, Scalar::all(255), thickness, 3);
+		line(canvas, Point((scalar_in_xRichtung*(fppw_points.at<double>(0, 0)) + 100), 250), Point((scalar_in_xRichtung*(fppw_points.at<double>(0, 0)) + 100), 245), Scalar::all(255), thickness, lineType, shift);
+
+	putText(canvas, x2, Point((scalar_in_xRichtung*(fppw_points.at<double>(1, 0)) + 65), 265), fontFace, fontScale, Scalar::all(255), thickness, 3);
+		line(canvas, Point((scalar_in_xRichtung*(fppw_points.at<double>(1, 0)) + 100), 250), Point((scalar_in_xRichtung*(fppw_points.at<double>(1, 0)) + 100), 245), Scalar::all(255), thickness, lineType, shift);
+
+	putText(canvas, x3, Point((scalar_in_xRichtung*(fppw_points.at<double>(2, 0)) + 65), 265), fontFace, fontScale, Scalar::all(255), thickness, 3);
+		line(canvas, Point((scalar_in_xRichtung*(fppw_points.at<double>(2, 0)) + 100), 250), Point((scalar_in_xRichtung*(fppw_points.at<double>(2, 0)) + 100), 245), Scalar::all(255), thickness, lineType, shift);
+
+	putText(canvas, x4, Point((scalar_in_xRichtung*(fppw_points.at<double>(3, 0)) + 65), 265), fontFace, fontScale, Scalar::all(255), thickness, 3);
+		line(canvas, Point((scalar_in_xRichtung*(fppw_points.at<double>(3, 0)) + 100), 250), Point((scalar_in_xRichtung*(fppw_points.at<double>(3, 0)) + 100), 245), Scalar::all(255), thickness, lineType, shift);
+
+	putText(canvas, x5, Point((scalar_in_xRichtung*(fppw_points.at<double>(4, 0)) + 65), 265), fontFace, fontScale, Scalar::all(255), thickness, 3);
+		line(canvas, Point((scalar_in_xRichtung*(fppw_points.at<double>(4, 0)) + 100), 250), Point((scalar_in_xRichtung*(fppw_points.at<double>(4, 0)) + 100), 245), Scalar::all(255), thickness, lineType, shift);
+
+	putText(canvas, x6, Point((scalar_in_xRichtung*(fppw_points.at<double>(5, 0)) + 65), 265), fontFace, fontScale, Scalar::all(255), thickness, 3);
+		line(canvas, Point((scalar_in_xRichtung*(fppw_points.at<double>(5, 0)) + 100), 250), Point((scalar_in_xRichtung*(fppw_points.at<double>(5, 0)) + 100), 245), Scalar::all(255), thickness, lineType, shift);
+
+	//text on y axis
+	putText(canvas, x1, Point(15, 255 - (scalar_in_yRichtung*(missrate_points.at<double>(0, 0)))), fontFace, fontScale, Scalar::all(255), thickness, 3);
+	line(canvas, Point(98, 250 - scalar_in_yRichtung*(missrate_points.at<double>(0, 0))), Point(105, 250 - scalar_in_yRichtung*(missrate_points.at<double>(0, 0))), Scalar::all(255), thickness, lineType, shift);
+	//putText(canvas, x2, Point(2, 250 - (scalar_in_yRichtung*(missrate_points.at<double>(1, 0)))), fontFace, fontScale, Scalar::all(255), thickness, 3);
+	//putText(canvas, x3, Point(2, 250 - (scalar_in_yRichtung*(missrate_points.at<double>(2, 0)))), fontFace, fontScale, Scalar::all(255), thickness, 3);
+	//putText(canvas, x4, Point(2, 250 - (scalar_in_yRichtung*(missrate_points.at<double>(3, 0)))), fontFace, fontScale, Scalar::all(255), thickness, 3);
+	//putText(canvas, x5, Point(2, 250 - (scalar_in_yRichtung*(missrate_points.at<double>(4, 0)))), fontFace, fontScale, Scalar::all(255), thickness, 3);
+	//putText(canvas, x6, Point(2, 250 - (scalar_in_yRichtung*(missrate_points.at<double>(5, 0)))), fontFace, fontScale, Scalar::all(255), thickness, 3);
+
+	// draw graph
+	circle(canvas, p1, 3, Scalar(blue, green, red), -1);
+	circle(canvas, p2, 3, Scalar(blue, green, red), -1);
+		line(canvas, p1, p2, Scalar(blue, green, red), thickness, lineType, shift);
+	circle(canvas, p3, 3, Scalar(blue, green, red), -1);
+		line(canvas, p2, p3, Scalar(blue, green, red), thickness, lineType, shift);
+	circle(canvas, p4, 3, Scalar(blue, green, red), -1);
+		line(canvas, p3, p4, Scalar(blue, green, red), thickness, lineType, shift);
+	circle(canvas, p5, 3, Scalar(blue, green, red), -1);
+		line(canvas, p4, p5, Scalar(blue, green, red), thickness, lineType, shift);
+	circle(canvas, p6, 3, Scalar(blue, green, red), -1);
+		line(canvas, p5, p6, Scalar(blue, green, red), thickness, lineType, shift);
+
+	//circle(canvas, Point(0,0), 3, Scalar(blue, green, red), -1);
+	//circle(canvas, Point(1000, 500), 3, Scalar(blue, green, red), -1);
+
+	//// draw the second graph
+	//circle(canvas, p1_n, 3, Scalar(255, 0, 0), -1);
+	//circle(canvas, p2_n, 3, Scalar(255, 0, 0), -1);
+	//	line(canvas, p1_n, p2_n, Scalar(255, 0, 0), thickness, lineType, shift);
+	//circle(canvas, p3_n, 3, Scalar(255, 0, 0), -1);
+	//	line(canvas, p2_n, p3_n, Scalar(255, 0, 0), thickness, lineType, shift);
+	//circle(canvas, p4_n, 3, Scalar(255, 0, 0), -1);
+	//	line(canvas, p3_n, p4_n, Scalar(255, 0, 0), thickness, lineType, shift);
+	//circle(canvas, p5_n, 3, Scalar(255, 0, 0), -1);
+	//	line(canvas, p4_n, p5_n, Scalar(255, 0, 0), thickness, lineType, shift);
+	//circle(canvas, p6_n, 3, Scalar(255, 0, 0), -1);
+	//	line(canvas, p5_n, p6_n, Scalar(255, 0, 0), thickness, lineType, shift);
+
+	imshow(name, canvas);
 	waitKey();
 }
 
+//double compare(double wert_x, double wert_y)
+//{
+//	if (wert_x <= wert_y) {
+//
+//		return wert_y;
+//	}
+//	else return wert_x;
+//}
 
 void presentation() {
-
 
 	Mat positions1_init = Mat::zeros(0, 4, CV_32S);
 	Mat det_scores1_init = Mat::zeros(0, 1, CV_32F);
