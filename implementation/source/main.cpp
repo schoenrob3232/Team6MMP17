@@ -531,10 +531,12 @@ void presentation() {
 
 	for (int i = 0; i < 5; i++) {
 		imshow("Resultat - Initiale SVM" + to_string(i+1), drawings_init[i]);
+		imwrite("Resultat - Initiale SVM" + to_string(i+1) + ".png", drawings_init[i]);
 	}
 
 	for (int i = 0; i < 5; i++) {
 		imshow("Resultat - SVM mit Hard Negatives" + to_string(i+1), drawings_hn[i]);
+		imwrite("Resultat - SVM mit Hard Negatives" + to_string(i+1) + ".png", drawings_hn[i]);
 	}
 	waitKey();
 }
