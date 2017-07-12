@@ -29,19 +29,19 @@ int main() {
 	Mat fppw_points = Mat::zeros(6, 1, CV_64F);
 	Mat missrate_points = Mat::zeros(6, 1, CV_64F);
 
-	double wert1x = 0.000850;
-	double wert2x = 0.001234;
-	double wert3x = 0.001756;
-	double wert4x = 0.002517;
-	double wert5x = 0.003389;
-	double wert6x = 0.004373;
+	double wert1x = 0.000059;
+	double wert2x = 0.000109;
+	double wert3x = 0.000213;
+	double wert4x = 0.000424;
+	double wert5x = 0.000720;
+	double wert6x = 0.001251;
 
-	double wert1y = 0.283046;
-	double wert2y = 0.283046;
-	double wert3y = 0.283046;
-	double wert4y = 0.283046;
-	double wert5y = 0.283046;
-	double wert6y = 0.283046;
+	double wert1y = 0.388664;
+	double wert2y = 0.385997;
+	double wert3y = 0.378854;
+	double wert4y = 0.371094;
+	double wert5y = 0.364414;
+	double wert6y = 0.352715;
 
 	fppw_points.at<double>(0, 0) = wert1x;
 	fppw_points.at<double>(1, 0) = wert2x;
@@ -57,14 +57,14 @@ int main() {
 	missrate_points.at<double>(4, 0) = wert5y;
 	missrate_points.at<double>(5, 0) = wert6y;
 
-	int blue = 0, green = 255, red = 0;
-	string name = "DET Curve";
+	int blue = 0, green = 0, red = 255;
+	string name = "DET Curve with hard negatives";
 	print_plot(fppw_points, missrate_points, name, blue, green, red);
 
 	//testing();
 	//testing2();
 
-	presentation();
+	//presentation();
 	return 0;
 }
 
@@ -125,7 +125,7 @@ int testing() {
 
 int testing2() {
 	Mat img1 = imread("INRIAPerson/INRIAPerson/Test/neg/prefecture.jpg");
-	imshow("Padded", padWithBorderPixels(img1, 40));
+	//imshow("Padded", padWithBorderPixels(img1, 40));
 	Mat positions = Mat::zeros(0, 4, CV_32S);
 	Mat det_scores = Mat::zeros(0, 1, CV_32F);
 	Mat imagePerson = imread("INRIAPerson/INRIAPerson/Test/pos/crop001501.png");
@@ -136,12 +136,12 @@ int testing2() {
 	cout << "Zeit: 2 : " << time(NULL) << endl;
 	nonMaxSuppression(positions, det_scores, 10);
 	//cout << positions << endl << det_scores << endl;
-	//sortByDetectionScore(positions, det_scores);
+	sortByDetectionScore(positions, det_scores);
 	cout << positions << endl << det_scores << endl;
 	Mat results = drawResults(imagePerson, positions, groundTruth);
 	///////////////////////////////////////
-	//computePlotPoints("linear_svm_no_hard_negatives_train_auto.xml");
-	//computePlotPoints_hard_negs("test_svm_hard_negatives.xml");
+	computePlotPoints("linear_svm_no_hard_negatives_train_auto.xml");
+	computePlotPoints_hard_negs("test_svm_hard_negatives.xml");
 	///////////////////////////////////////////
 	imshow("Resultate", results);
 	imwrite("/home/user/Documents/Resultate.png", results);
@@ -260,7 +260,7 @@ void sortByXVals(Mat &x_Vals, Mat &y_Vals) {
 
 void print_plot(Mat fppw_points, Mat missrate_points, string name, int blue, int green, int red)
 {
-	cv::Mat canvas = cv::Mat::zeros(500, 1150, CV_8UC3);
+	cv::Mat canvas = cv::Mat::zeros(500, 1200, CV_8UC3);
 	int thickness = 1, lineType = 8, shift = 0, fontFace = FONT_HERSHEY_SCRIPT_SIMPLEX;
 	double fontScale = 0.5;
 
@@ -296,12 +296,12 @@ void print_plot(Mat fppw_points, Mat missrate_points, string name, int blue, int
 	scalar_in_yRichtung = 240.0 / abstandy;
 
 	// generating the points 
-	Point p1 = Point((scalar_in_xRichtung*(fppw_points.at<double>(0, 0)) + 100), 250 - scalar_in_yRichtung*(missrate_points.at<double>(0, 0)));
-	Point p2 = Point((scalar_in_xRichtung*(fppw_points.at<double>(1, 0)) + 100), 250 - scalar_in_yRichtung*(missrate_points.at<double>(1, 0)));
-	Point p3 = Point((scalar_in_xRichtung*(fppw_points.at<double>(2, 0)) + 100), 250 - scalar_in_yRichtung*(missrate_points.at<double>(2, 0)));
-	Point p4 = Point((scalar_in_xRichtung*(fppw_points.at<double>(3, 0)) + 100), 250 - scalar_in_yRichtung*(missrate_points.at<double>(3, 0)));
-	Point p5 = Point((scalar_in_xRichtung*(fppw_points.at<double>(4, 0)) + 100), 250 - scalar_in_yRichtung*(missrate_points.at<double>(4, 0)));
-	Point p6 = Point((scalar_in_xRichtung*(fppw_points.at<double>(5, 0)) + 100), 250 - scalar_in_yRichtung*(missrate_points.at<double>(5, 0)));
+	Point p1 = Point((scalar_in_xRichtung*(fppw_points.at<double>(0, 0)) + 100), 400 - scalar_in_yRichtung*(missrate_points.at<double>(0, 0)));
+	Point p2 = Point((scalar_in_xRichtung*(fppw_points.at<double>(1, 0)) + 100), 400 - scalar_in_yRichtung*(missrate_points.at<double>(1, 0)));
+	Point p3 = Point((scalar_in_xRichtung*(fppw_points.at<double>(2, 0)) + 100), 400 - scalar_in_yRichtung*(missrate_points.at<double>(2, 0)));
+	Point p4 = Point((scalar_in_xRichtung*(fppw_points.at<double>(3, 0)) + 100), 400 - scalar_in_yRichtung*(missrate_points.at<double>(3, 0)));
+	Point p5 = Point((scalar_in_xRichtung*(fppw_points.at<double>(4, 0)) + 100), 400 - scalar_in_yRichtung*(missrate_points.at<double>(4, 0)));
+	Point p6 = Point((scalar_in_xRichtung*(fppw_points.at<double>(5, 0)) + 100), 400 - scalar_in_yRichtung*(missrate_points.at<double>(5, 0)));
 
 	/*Point p1_n = Point((scalar_in_xRichtung*(fppw_points.at<double>(0, 0)) + 10), 250 - scalar_in_yRichtung*(missrate_points.at<double>(0, 0)));
 	Point p2_n = Point((scalar_in_xRichtung*(fppw_points.at<double>(1, 0)) + 10), 250 - scalar_in_yRichtung*(missrate_points.at<double>(1, 0)));
@@ -311,8 +311,8 @@ void print_plot(Mat fppw_points, Mat missrate_points, string name, int blue, int
 	Point p6_n = Point((scalar_in_xRichtung*(fppw_points.at<double>(5, 0)) + 10), 250 - scalar_in_yRichtung*(missrate_points.at<double>(5, 0)));*/
 
 	//Axes
-	line(canvas, Point(100, 0), Point(100, 500), Scalar(255, 255, 255), thickness, lineType, shift);//y Achse
-	line(canvas, Point(100, 250), Point(1140, 250), Scalar(255, 255, 255), thickness, lineType, shift);//x Achse
+	line(canvas, Point(100, 50), Point(100, 450), Scalar(255, 255, 255), thickness, lineType, shift);//y Achse
+	line(canvas, Point(50, 400), Point(1140, 400), Scalar(255, 255, 255), thickness, lineType, shift);//x Achse
 
 	//Numbers on the Axes
 	string x1 = to_string(fppw_points.at<double>(0, 0));
@@ -322,33 +322,37 @@ void print_plot(Mat fppw_points, Mat missrate_points, string name, int blue, int
 	string x5 = to_string(fppw_points.at<double>(4, 0));
 	string x6 = to_string(fppw_points.at<double>(5, 0));
 
+	string y1 = to_string(missrate_points.at<double>(0, 0));
+	string y6 = to_string(missrate_points.at<double>(5, 0));
+
 	//text on x axis
-	putText(canvas, x1, Point((scalar_in_xRichtung*(fppw_points.at<double>(0, 0)) + 65), 265), fontFace, fontScale, Scalar::all(255), thickness, 3);
-		line(canvas, Point((scalar_in_xRichtung*(fppw_points.at<double>(0, 0)) + 100), 250), Point((scalar_in_xRichtung*(fppw_points.at<double>(0, 0)) + 100), 245), Scalar::all(255), thickness, lineType, shift);
+	putText(canvas, x1, Point((scalar_in_xRichtung*(fppw_points.at<double>(0, 0)) + 65), 417), fontFace, fontScale, Scalar::all(255), thickness, 3);
+		line(canvas, Point((scalar_in_xRichtung*(fppw_points.at<double>(0, 0)) + 100), 400), Point((scalar_in_xRichtung*(fppw_points.at<double>(0, 0)) + 100), 395), Scalar::all(255), thickness, lineType, shift);
 
-	putText(canvas, x2, Point((scalar_in_xRichtung*(fppw_points.at<double>(1, 0)) + 65), 265), fontFace, fontScale, Scalar::all(255), thickness, 3);
-		line(canvas, Point((scalar_in_xRichtung*(fppw_points.at<double>(1, 0)) + 100), 250), Point((scalar_in_xRichtung*(fppw_points.at<double>(1, 0)) + 100), 245), Scalar::all(255), thickness, lineType, shift);
+	putText(canvas, x2, Point((scalar_in_xRichtung*(fppw_points.at<double>(1, 0)) + 65), 435), fontFace, fontScale, Scalar::all(255), thickness, 3);
+		line(canvas, Point((scalar_in_xRichtung*(fppw_points.at<double>(1, 0)) + 100), 420), Point((scalar_in_xRichtung*(fppw_points.at<double>(1, 0)) + 100), 395), Scalar::all(255), thickness, lineType, shift);
 
-	putText(canvas, x3, Point((scalar_in_xRichtung*(fppw_points.at<double>(2, 0)) + 65), 265), fontFace, fontScale, Scalar::all(255), thickness, 3);
-		line(canvas, Point((scalar_in_xRichtung*(fppw_points.at<double>(2, 0)) + 100), 250), Point((scalar_in_xRichtung*(fppw_points.at<double>(2, 0)) + 100), 245), Scalar::all(255), thickness, lineType, shift);
+	putText(canvas, x3, Point((scalar_in_xRichtung*(fppw_points.at<double>(2, 0)) + 65), 417), fontFace, fontScale, Scalar::all(255), thickness, 3);
+		line(canvas, Point((scalar_in_xRichtung*(fppw_points.at<double>(2, 0)) + 100), 400), Point((scalar_in_xRichtung*(fppw_points.at<double>(2, 0)) + 100), 395), Scalar::all(255), thickness, lineType, shift);
 
-	putText(canvas, x4, Point((scalar_in_xRichtung*(fppw_points.at<double>(3, 0)) + 65), 265), fontFace, fontScale, Scalar::all(255), thickness, 3);
-		line(canvas, Point((scalar_in_xRichtung*(fppw_points.at<double>(3, 0)) + 100), 250), Point((scalar_in_xRichtung*(fppw_points.at<double>(3, 0)) + 100), 245), Scalar::all(255), thickness, lineType, shift);
+	putText(canvas, x4, Point((scalar_in_xRichtung*(fppw_points.at<double>(3, 0)) + 65), 435), fontFace, fontScale, Scalar::all(255), thickness, 3);
+		line(canvas, Point((scalar_in_xRichtung*(fppw_points.at<double>(3, 0)) + 100), 420), Point((scalar_in_xRichtung*(fppw_points.at<double>(3, 0)) + 100), 395), Scalar::all(255), thickness, lineType, shift);
 
-	putText(canvas, x5, Point((scalar_in_xRichtung*(fppw_points.at<double>(4, 0)) + 65), 265), fontFace, fontScale, Scalar::all(255), thickness, 3);
-		line(canvas, Point((scalar_in_xRichtung*(fppw_points.at<double>(4, 0)) + 100), 250), Point((scalar_in_xRichtung*(fppw_points.at<double>(4, 0)) + 100), 245), Scalar::all(255), thickness, lineType, shift);
+	putText(canvas, x5, Point((scalar_in_xRichtung*(fppw_points.at<double>(4, 0)) + 65), 417), fontFace, fontScale, Scalar::all(255), thickness, 3);
+		line(canvas, Point((scalar_in_xRichtung*(fppw_points.at<double>(4, 0)) + 100), 400), Point((scalar_in_xRichtung*(fppw_points.at<double>(4, 0)) + 100), 395), Scalar::all(255), thickness, lineType, shift);
 
-	putText(canvas, x6, Point((scalar_in_xRichtung*(fppw_points.at<double>(5, 0)) + 65), 265), fontFace, fontScale, Scalar::all(255), thickness, 3);
-		line(canvas, Point((scalar_in_xRichtung*(fppw_points.at<double>(5, 0)) + 100), 250), Point((scalar_in_xRichtung*(fppw_points.at<double>(5, 0)) + 100), 245), Scalar::all(255), thickness, lineType, shift);
+	putText(canvas, x6, Point((scalar_in_xRichtung*(fppw_points.at<double>(5, 0)) + 65), 435), fontFace, fontScale, Scalar::all(255), thickness, 3);
+		line(canvas, Point((scalar_in_xRichtung*(fppw_points.at<double>(5, 0)) + 100), 420), Point((scalar_in_xRichtung*(fppw_points.at<double>(5, 0)) + 100), 395), Scalar::all(255), thickness, lineType, shift);
 
 	//text on y axis
-	putText(canvas, x1, Point(15, 255 - (scalar_in_yRichtung*(missrate_points.at<double>(0, 0)))), fontFace, fontScale, Scalar::all(255), thickness, 3);
-	line(canvas, Point(98, 250 - scalar_in_yRichtung*(missrate_points.at<double>(0, 0))), Point(105, 250 - scalar_in_yRichtung*(missrate_points.at<double>(0, 0))), Scalar::all(255), thickness, lineType, shift);
-	//putText(canvas, x2, Point(2, 250 - (scalar_in_yRichtung*(missrate_points.at<double>(1, 0)))), fontFace, fontScale, Scalar::all(255), thickness, 3);
-	//putText(canvas, x3, Point(2, 250 - (scalar_in_yRichtung*(missrate_points.at<double>(2, 0)))), fontFace, fontScale, Scalar::all(255), thickness, 3);
-	//putText(canvas, x4, Point(2, 250 - (scalar_in_yRichtung*(missrate_points.at<double>(3, 0)))), fontFace, fontScale, Scalar::all(255), thickness, 3);
-	//putText(canvas, x5, Point(2, 250 - (scalar_in_yRichtung*(missrate_points.at<double>(4, 0)))), fontFace, fontScale, Scalar::all(255), thickness, 3);
-	//putText(canvas, x6, Point(2, 250 - (scalar_in_yRichtung*(missrate_points.at<double>(5, 0)))), fontFace, fontScale, Scalar::all(255), thickness, 3);
+	putText(canvas, y1, Point(15, 405 - (scalar_in_yRichtung*(missrate_points.at<double>(0, 0)))), fontFace, fontScale, Scalar::all(255), thickness, 3);
+		line(canvas, Point(98, 400 - scalar_in_yRichtung*(missrate_points.at<double>(0, 0))), Point(105, 400 - scalar_in_yRichtung*(missrate_points.at<double>(0, 0))), Scalar::all(255), thickness, lineType, shift);
+	//putText(canvas, y2, Point(15, 255 - (scalar_in_yRichtung*(missrate_points.at<double>(1, 0)))), fontFace, fontScale, Scalar::all(255), thickness, 3);
+	//putText(canvas, y3, Point(15, 255 - (scalar_in_yRichtung*(missrate_points.at<double>(2, 0)))), fontFace, fontScale, Scalar::all(255), thickness, 3);
+	//putText(canvas, y4, Point(15, 255 - (scalar_in_yRichtung*(missrate_points.at<double>(3, 0)))), fontFace, fontScale, Scalar::all(255), thickness, 3);
+	//putText(canvas, y5, Point(15, 255 - (scalar_in_yRichtung*(missrate_points.at<double>(4, 0)))), fontFace, fontScale, Scalar::all(255), thickness, 3);
+	putText(canvas, y6, Point(15, 405 - (scalar_in_yRichtung*(missrate_points.at<double>(5, 0)))), fontFace, fontScale, Scalar::all(255), thickness, 3);
+		line(canvas, Point(98, 400 - scalar_in_yRichtung*(missrate_points.at<double>(5, 0))), Point(105, 400 - scalar_in_yRichtung*(missrate_points.at<double>(5, 0))), Scalar::all(255), thickness, lineType, shift);
 
 	// draw graph
 	circle(canvas, p1, 3, Scalar(blue, green, red), -1);
@@ -380,6 +384,7 @@ void print_plot(Mat fppw_points, Mat missrate_points, string name, int blue, int
 	//	line(canvas, p5_n, p6_n, Scalar(255, 0, 0), thickness, lineType, shift);
 
 	imshow(name, canvas);
+	imwrite(name + ".png", canvas);
 	waitKey();
 }
 
