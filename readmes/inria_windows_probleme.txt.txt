@@ -1,0 +1,17 @@
+INRIA-Datensatz entpacken: Probleme bei Windows-Nutzern:
+
+1. SymLinks: 
+In manchen Ordnern (train_64x128_H96 und test_64x128_H96) sind SymLinks (Symbolische Links) mit dem Namen "neg". 
+Diese können von Windows nicht interpretiert, und somit auch nicht entpackt werden. Das mach aber nichts. 
+Man kann mit Programmen wie 7zip auch einzelne Ordner/Dateien entpacken. Man kann die SymLinks einfach durch die Ordner
+ "Neg" in den Ordnern (Train und Test) austauschen und diesen dann in "neg" umbenennen, da genannte SymLinks nur diese 
+Ordner "substituieren". (Vermutlich wurden die SymLinks nur eingefügt um Redundanz zu vermeiden.)
+
+2. Gleichnamige Dateien:
+Allem Anschein nach wurde der Datensatz auf einem System erstellt, welches eine case-sensitive Datenhaltung unterstützt, 
+denn es gibt in dem TAR-Archiv "gleichnamige" (nur unterschiede in Gross-/Kleinschreibung) Dateien. Ich habe beim 
+Dozenten nachgefragt und die Erlaubnis erhalten solche zu ignorieren. Das heisst: Einfach überschreiben/auto-rename 
+(ist beim entpacken mit 7zip möglich), oder irgendsowas in der Art. Man muss später beim Iterieren durch beiliegende 
+Listen einfach vorher nachsehen ob die aktuell behandelte Datei überhaupt existiert. 
+
+Falls jemand 7zip sucht: http://www.7-zip.de/
