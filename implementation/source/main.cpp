@@ -29,19 +29,19 @@ int main() {
 	Mat fppw_points = Mat::zeros(6, 1, CV_64F);
 	Mat missrate_points = Mat::zeros(6, 1, CV_64F);
 
-	double wert1x = 0.000059;
-	double wert2x = 0.000109;
-	double wert3x = 0.000213;
-	double wert4x = 0.000424;
-	double wert5x = 0.000720;
-	double wert6x = 0.001251;
+	double wert1x = 0.000850;
+	double wert2x = 0.001234;
+	double wert3x = 0.001756;
+	double wert4x = 0.002517;
+	double wert5x = 0.003389;
+	double wert6x = 0.004373;
 
-	double wert1y = 0.388664;
-	double wert2y = 0.385997;
-	double wert3y = 0.378854;
-	double wert4y = 0.371094;
-	double wert5y = 0.364414;
-	double wert6y = 0.352715;
+	double wert1y = 0.347915;
+	double wert2y = 0.335072;
+	double wert3y = 0.319123;
+	double wert4y = 0.304076;
+	double wert5y = 0.287994;
+	double wert6y = 0.283046;
 
 	fppw_points.at<double>(0, 0) = wert1x;
 	fppw_points.at<double>(1, 0) = wert2x;
@@ -57,14 +57,54 @@ int main() {
 	missrate_points.at<double>(4, 0) = wert5y;
 	missrate_points.at<double>(5, 0) = wert6y;
 
-	int blue = 0, green = 0, red = 255;
-	string name = "DET Curve with hard negatives";
+
+	int blue = 0, green = 255, red = 0;
+	string name = "DET Curve without hard negatives";
 	print_plot(fppw_points, missrate_points, name, blue, green, red);
+
+
+	//Test für Plot mit hard negatives
+	Mat fppw_points_hn = Mat::zeros(6, 1, CV_64F);
+	Mat missrate_points_hn = Mat::zeros(6, 1, CV_64F);
+
+	double wert1x_hn = 0.000059;
+	double wert2x_hn = 0.000109;
+	double wert3x_hn = 0.000213;
+	double wert4x_hn = 0.000424;
+	double wert5x_hn = 0.000720;
+	double wert6x_hn = 0.001251;
+
+	double wert1y_hn = 0.388664;
+	double wert2y_hn = 0.385997;
+	double wert3y_hn = 0.378854;
+	double wert4y_hn = 0.371094;
+	double wert5y_hn = 0.364414;
+	double wert6y_hn = 0.352715;
+
+	fppw_points_hn.at<double>(0, 0) = wert1x_hn;
+	fppw_points_hn.at<double>(1, 0) = wert2x_hn;
+	fppw_points_hn.at<double>(2, 0) = wert3x_hn;
+	fppw_points_hn.at<double>(3, 0) = wert4x_hn;
+	fppw_points_hn.at<double>(4, 0) = wert5x_hn;
+	fppw_points_hn.at<double>(5, 0) = wert6x_hn;
+
+	missrate_points_hn.at<double>(0, 0) = wert1y_hn;
+	missrate_points_hn.at<double>(1, 0) = wert2y_hn;
+	missrate_points_hn.at<double>(2, 0) = wert3y_hn;
+	missrate_points_hn.at<double>(3, 0) = wert4y_hn;
+	missrate_points_hn.at<double>(4, 0) = wert5y_hn;
+	missrate_points_hn.at<double>(5, 0) = wert6y_hn;
+
+
+	int blue_hn = 0, green_hn = 0, red_hn = 255;
+	string name_hn = "DET Curve with hard negatives";
+	print_plot(fppw_points_hn, missrate_points_hn, name_hn, blue_hn, green_hn, red_hn);
+
 
 	//testing();
 	//testing2();
 
-	//presentation();
+	presentation();
 	return 0;
 }
 
