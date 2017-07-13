@@ -467,7 +467,7 @@ void computeDETPoint(Mat &fppw, Mat &missRates, const char* svm, float sigma) {
 	new_fppw.at<double>(0, 0) = ((double)allFalsePositives) / ((double)allWindowsTested);
 	new_missrate.at<double>(0, 0) = ((double)collectedMissRates) / ((double)scannedImages);
 	fppw.push_back(new_fppw);
-	missRates.push_back(new_missrate);
+	missRates.push_back(new_missrate / 288.0 * (288.0 + 453.0));
 }
 
 
