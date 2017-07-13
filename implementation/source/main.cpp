@@ -11,6 +11,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/contrib/contrib.hpp>
 #include <ctime>
+#include <cstdlib>
 
 using namespace std;
 using namespace cv;
@@ -22,6 +23,7 @@ void computePlotPoints_hard_negs(const char *svm);
 void sortByXVals(Mat &x_Vals, Mat &y_Vals); 
 void print_plot(Mat fppw_points, Mat missrate_points, string name, int blue, int green, int red);
 void presentation();
+void presentation_runtime();
 
 int main() {
 
@@ -36,12 +38,12 @@ int main() {
 	double wert5x = 0.003389;
 	double wert6x = 0.004373;
 
-	double wert1y = 0.347915;
-	double wert2y = 0.335072;
-	double wert3y = 0.319123;
-	double wert4y = 0.304076;
-	double wert5y = 0.287994;
-	double wert6y = 0.283046;
+	double wert1y = 0.347915 / 288.0 * (288.0 + 453.0);
+	double wert2y = 0.335072 / 288.0 * (288.0 + 453.0);
+	double wert3y = 0.319123 / 288.0 * (288.0 + 453.0);
+	double wert4y = 0.304076 / 288.0 * (288.0 + 453.0);
+	double wert5y = 0.287994 / 288.0 * (288.0 + 453.0);
+	double wert6y = 0.283046 / 288.0 * (288.0 + 453.0);
 
 	fppw_points.at<double>(0, 0) = wert1x;
 	fppw_points.at<double>(1, 0) = wert2x;
@@ -74,12 +76,12 @@ int main() {
 	double wert5x_hn = 0.000720;
 	double wert6x_hn = 0.001251;
 
-	double wert1y_hn = 0.388664;
-	double wert2y_hn = 0.385997;
-	double wert3y_hn = 0.378854;
-	double wert4y_hn = 0.371094;
-	double wert5y_hn = 0.364414;
-	double wert6y_hn = 0.352715;
+	double wert1y_hn = 0.388664 / 288.0 * (288.0 + 453.0);
+	double wert2y_hn = 0.385997 / 288.0 * (288.0 + 453.0);
+	double wert3y_hn = 0.378854 / 288.0 * (288.0 + 453.0);
+	double wert4y_hn = 0.371094 / 288.0 * (288.0 + 453.0);
+	double wert5y_hn = 0.364414 / 288.0 * (288.0 + 453.0);
+	double wert6y_hn = 0.352715 / 288.0 * (288.0 + 453.0);
 
 	fppw_points_hn.at<double>(0, 0) = wert1x_hn;
 	fppw_points_hn.at<double>(1, 0) = wert2x_hn;
@@ -104,7 +106,7 @@ int main() {
 	//testing();
 	//testing2();
 
-	presentation();
+	presentation_runtime();
 	return 0;
 }
 
@@ -537,6 +539,42 @@ void presentation() {
 	for (int i = 0; i < 5; i++) {
 		imshow("Resultat - SVM mit Hard Negatives" + to_string(i+1), drawings_hn[i]);
 		imwrite("Resultat - SVM mit Hard Negatives" + to_string(i+1) + ".png", drawings_hn[i]);
+	}
+	waitKey();
+}
+
+/*
+ * Executes detection for 10 random images on runtime.
+ * */
+void presentation_runtime() {
+	vector<Mat> drawings;
+	srand(time(NULL));
+	int x;
+	string line, line_annot;
+	Mat groundTruths, sampleImg, positions, det_scores;
+
+	for (int i = 0; i < 10; i++) {
+		positions = Mat::zeros(0, 4, CV_32S);
+		det_scores = Mat::zeros(0, 1, CV_32F);
+		ifstream filePos("INRIAPerson/INRIAPerson/Test/pos.lst");
+		ifstream fileAnnotations("INRIAPerson/INRIAPerson/Test/annotations.lst");
+
+		x = rand() % 288;
+		for (int j = 0; j < x; j++) {
+			getline(filePos, line);
+			getline(fileAnnotations, line_annot);
+		}
+		cout << i << " : " << line << endl << line_annot << endl;
+		cout << x << endl;
+		sampleImg = imread("INRIAPerson/INRIAPerson/" + line);
+		groundTruths = getGroundTruth("INRIAPerson/INRIAPerson/" + line_annot);
+		extractDetections(sampleImg, "svm_all_hard_negatives.xml", positions, det_scores);
+		nonMaxSuppression(positions, det_scores, 10);
+		drawings.push_back(drawResults(sampleImg, positions, groundTruths));
+	}
+
+	for (int i = 0; i < 10; i++) {
+			imshow("Resultat - ZufaelligesBild " + to_string(i+1), drawings[i]);
 	}
 	waitKey();
 }
