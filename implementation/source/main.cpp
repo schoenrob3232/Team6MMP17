@@ -97,11 +97,9 @@ int main() {
 	missrate_points_hn.at<double>(4, 0) = wert5y_hn;
 	missrate_points_hn.at<double>(5, 0) = wert6y_hn;
 
-
 	int blue_hn = 0, green_hn = 0, red_hn = 255;
 	string name_hn = "DET Curve with hard negatives";
 	print_plot(fppw_points_hn, missrate_points_hn, name_hn, blue_hn, green_hn, red_hn);
-
 
 	//testing();
 	//testing2();
@@ -112,6 +110,8 @@ int main() {
 
 
 int testing() {
+	// Diese Funktion wurde von uns nur zum anfänglichen Testen verwendet.
+
 	/*
 	// Testing getGroundTruths(string filename).
 	// Filename will propably have to be changed!!
@@ -144,8 +144,7 @@ int testing() {
 	Mat data = Mat::zeros(0, 13440, CV_32F);
 	//slidingWindowGetData(image, labels, data, groundTruth);
 
-
-	aquireTestTrainingData(labels, data);
+	acquireTestTrainingData(labels, data);
 	//aquireTrainingPositives(labels, data);
 
 	cout << "x/y: " << data.cols << "/" << data.rows << endl;
@@ -155,9 +154,9 @@ int testing() {
 	Mat detected = showCertainDetections(imagePerson, "test_svm.xml", 0.49);
 	cout << "detected --- " << endl;
 	imshow("Detection", detected);
-	imwrite("/home/user/Documents/detection.png", detected);
-	aquireMultipleHardNegatives("test_svm.xml", labels, data);
-	aquireUltraHardNegatives("test_svm.xml", labels, data);
+	imwrite("detection.png", detected);
+	acquireMultipleHardNegatives("test_svm.xml", labels, data);
+	acquireUltraHardNegatives("test_svm.xml", labels, data);
 	training_SVM(data, labels, "svm_all_hard_negatives.xml");
 	cout << "x/y : " << data.cols << "/" << data.rows << endl;
 	waitKey();
@@ -181,12 +180,12 @@ int testing2() {
 	sortByDetectionScore(positions, det_scores);
 	cout << positions << endl << det_scores << endl;
 	Mat results = drawResults(imagePerson, positions, groundTruth);
-	///////////////////////////////////////
-	computePlotPoints("linear_svm_no_hard_negatives_train_auto.xml");
-	computePlotPoints_hard_negs("test_svm_hard_negatives.xml");
-	///////////////////////////////////////////
-	imshow("Resultate", results);
-	imwrite("/home/user/Documents/Resultate.png", results);
+	/////// fuer DET Plot ////////////////////////////////
+	computePlotPoints("linear_svm_no_hard_negatives_train_auto.xml"); // einmal ohne hard negatives
+	computePlotPoints_hard_negs("test_svm_hard_negatives.xml"); // einmal mit hard negatives
+	//////////////////////////////////////////////////////
+	imshow("Results", results);
+	imwrite("Results.png", results);
 
 	waitKey();
 	destroyAllWindows();
@@ -195,7 +194,7 @@ int testing2() {
 
 
 /*
-computes multiple DET points for SVM trained without hard negatives
+	computes multiple DET points for SVM trained without hard negatives
 */
 void computePlotPoints(const char *svm) {
 	Mat fppw_points = Mat::zeros(0, 1, CV_64F);
@@ -237,7 +236,7 @@ void computePlotPoints(const char *svm) {
 }
 
 /*
-computes multiple DET points for SVM trained with hard negatives
+	computes multiple DET points for SVM trained with hard negatives
 */
 void computePlotPoints_hard_negs(const char *svm) {
 	Mat fppw_points = Mat::zeros(0, 1, CV_64F);
@@ -251,7 +250,7 @@ void computePlotPoints_hard_negs(const char *svm) {
 	}
 	sortByXVals(fppw_points, missrate_points);
 
-	// save values in .txt to be safe
+	// save values in .txt for the py script
 	ofstream file_m, file_f;
 	file_m.open("y_value_neg.txt", std::ios_base::app);
 	file_f.open("x_value_neg.txt", std::ios_base::app);
@@ -279,18 +278,21 @@ void computePlotPoints_hard_negs(const char *svm) {
 }
 
 /*
-Sorts the rows of x_Vals and y_Vals according to x_Vals (ascending)
+	Sorts the rows of x_Vals and y_Vals according to x_Vals (ascending)
 */
-void sortByXVals(Mat &x_Vals, Mat &y_Vals) {
+void sortByXVals(Mat &x_Vals, Mat &y_Vals) 
+{
 	int n = x_Vals.rows;
 	Mat pos = Mat::zeros(1, 1, CV_64F);
 	double key;
 	int j;
-	for (int i = 1; i < n; i++) {
+	for (int i = 1; i < n; i++) 
+	{
 		pos.at<double>(0, 0) = y_Vals.at<double>(i, 0);
 		key = x_Vals.at<double>(i, 0);
 		j = i;
-		while (j > 0 && key < x_Vals.at<double>(j - 1, 0)) {
+		while (j > 0 && key < x_Vals.at<double>(j - 1, 0)) 
+		{
 			x_Vals.at<double>(j, 0) = x_Vals.at<double>(j - 1, 0);
 			y_Vals.at<double>(j, 0) = y_Vals.at<double>(j - 1, 0);
 			j--;
@@ -312,14 +314,18 @@ void print_plot(Mat fppw_points, Mat missrate_points, string name, int blue, int
 	double fppw_max = fppw_points.at<double>(0, 0);
 	double missrate_max = missrate_points.at<double>(0, 0);
 
-	for (int i = 1; i < len1; i++) {
-		if (fppw_max < fppw_points.at<double>(i, 0)) {
+	for (int i = 1; i < len1; i++) 
+	{
+		if (fppw_max < fppw_points.at<double>(i, 0)) 
+		{
 			fppw_max = fppw_points.at<double>(i, 0);
 		}
 	}
 
-	for (int i = 1; i < len1; i++) {
-		if (missrate_max < missrate_points.at<double>(i, 0)) {
+	for (int i = 1; i < len1; i++) 
+	{
+		if (missrate_max < missrate_points.at<double>(i, 0)) 
+		{
 			missrate_max = missrate_points.at<double>(i, 0);
 		}
 	}
@@ -532,13 +538,13 @@ void presentation() {
 	drawings_hn.push_back(drawResults(image5, positions5_hn, groundTruth5));
 
 	for (int i = 0; i < 5; i++) {
-		imshow("Resultat - Initiale SVM" + to_string(i+1), drawings_init[i]);
-		imwrite("Resultat - Initiale SVM" + to_string(i+1) + ".png", drawings_init[i]);
+		imshow("Result - Initial SVM" + to_string(i+1), drawings_init[i]);
+		imwrite("Result_Initial_SVM" + to_string(i+1) + ".png", drawings_init[i]);
 	}
 
 	for (int i = 0; i < 5; i++) {
-		imshow("Resultat - SVM mit Hard Negatives" + to_string(i+1), drawings_hn[i]);
-		imwrite("Resultat - SVM mit Hard Negatives" + to_string(i+1) + ".png", drawings_hn[i]);
+		imshow("Result - SVM with Hard Negatives" + to_string(i+1), drawings_hn[i]);
+		imwrite("Result_SVM_with_hard_negatives" + to_string(i+1) + ".png", drawings_hn[i]);
 	}
 	waitKey();
 }
@@ -546,21 +552,24 @@ void presentation() {
 /*
  * Executes detection for 10 random images on runtime.
  * */
-void presentation_runtime() {
+void presentation_runtime() 
+{
 	vector<Mat> drawings;
-	srand(time(NULL));
+	srand(time(NULL)); 
 	int x;
 	string line, line_annot;
 	Mat groundTruths, sampleImg, positions, det_scores;
 
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < 10; i++) 
+	{
 		positions = Mat::zeros(0, 4, CV_32S);
 		det_scores = Mat::zeros(0, 1, CV_32F);
 		ifstream filePos("INRIAPerson/INRIAPerson/Test/pos.lst");
 		ifstream fileAnnotations("INRIAPerson/INRIAPerson/Test/annotations.lst");
 
 		x = rand() % 288;
-		for (int j = 0; j < x; j++) {
+		for (int j = 0; j < x; j++) 
+		{
 			getline(filePos, line);
 			getline(fileAnnotations, line_annot);
 		}
@@ -573,8 +582,9 @@ void presentation_runtime() {
 		drawings.push_back(drawResults(sampleImg, positions, groundTruths));
 	}
 
-	for (int i = 0; i < 10; i++) {
-			imshow("Resultat - ZufaelligesBild " + to_string(i+1), drawings[i]);
+	for (int i = 0; i < 10; i++) 
+	{
+			imshow("Result - Random picked Picture " + to_string(i+1), drawings[i]);
 	}
 	waitKey();
 }

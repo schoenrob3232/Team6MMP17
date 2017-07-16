@@ -15,14 +15,14 @@
 using namespace std;
 using namespace cv;
 
-void aquireRandomNegatives(Mat img_arg, Mat &labels_arg, Mat &data_arg, int n);
-void aquireSimplePositive(Mat img_arg, Mat &labels_arg, Mat &data_arg);
-void aquireTestTrainingData(Mat &labels_arg, Mat &data_arg);
+void acquireRandomNegatives(Mat img_arg, Mat &labels_arg, Mat &data_arg, int n);
+void acquireSimplePositive(Mat img_arg, Mat &labels_arg, Mat &data_arg);
+void acquireTestTrainingData(Mat &labels_arg, Mat &data_arg);
 void training_SVM(Mat& data_arg, Mat& labels_arg, const char* name);
 Mat showCertainDetections(Mat img_arg, const char* svm_name, double threshold);
-void aquireHardestNegative(Mat img_arg, const char* svm_name, Mat &labels_arg, Mat &data_arg, Mat groundTruths_arg);
-void aquireMultipleHardNegatives(const char* svm_name, Mat &labels_arg, Mat &data_arg);
-void aquireTrainingPositives(Mat &labels_arg, Mat &data_arg);
-void aquireUltraHardNegatives(const char* svm_name, Mat &labels_arg, Mat &data_arg);
+void acquireHardestNegative(Mat img_arg, const char* svm_name, Mat &labels_arg, Mat &data_arg, Mat groundTruths_arg);
+void acquireMultipleHardNegatives(const char* svm_name, Mat &labels_arg, Mat &data_arg);
+void acquireTrainingPositives(Mat &labels_arg, Mat &data_arg);
+void acquireUltraHardNegatives(const char* svm_name, Mat &labels_arg, Mat &data_arg);
 
 #endif

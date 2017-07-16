@@ -37,7 +37,8 @@ ____________ | _______ | _______ | _______ | _______
 region1		 | 24	   | 1		 | 170	   | 503
 region2		 | 39	   | 44		 | 102	   | 432
 */
-double fastComputeIoU(Mat region1, Mat region2) {
+double fastComputeIoU(Mat region1, Mat region2) 
+{
 	int x1_loc1 = region1.at<int>(0, 0);
 	int y1_loc1 = region1.at<int>(0, 1);
 	int x2_loc1 = region1.at<int>(0, 2);
@@ -52,28 +53,38 @@ double fastComputeIoU(Mat region1, Mat region2) {
 	double intersectionOverUnion;
 
 	//compute x-Axis overlap
-	if (x1_loc1 > x2_loc2 || x2_loc1 < x1_loc2) {
+	if (x1_loc1 > x2_loc2 || x2_loc1 < x1_loc2) 
+	{
 		x_overlap = 0;
-	} else if (x1_loc1 <= x1_loc2 && x2_loc2 <= x2_loc1) {
+	} else if (x1_loc1 <= x1_loc2 && x2_loc2 <= x2_loc1) 
+	{
 		x_overlap = x2_loc2 - x1_loc2;
-	} else if (x1_loc2 <= x1_loc1 && x2_loc1 <= x2_loc2) {
+	} else if (x1_loc2 <= x1_loc1 && x2_loc1 <= x2_loc2) 
+	{
 		x_overlap = x2_loc1 - x1_loc1;
-	} else if (x1_loc1 <= x1_loc2 && x2_loc1 <= x2_loc2) {
+	} else if (x1_loc1 <= x1_loc2 && x2_loc1 <= x2_loc2) 
+	{
 		x_overlap = x2_loc1 - x1_loc2;
-	} else if (x1_loc2 <= x1_loc1 && x2_loc2 <= x2_loc1) {
+	} else if (x1_loc2 <= x1_loc1 && x2_loc2 <= x2_loc1) 
+	{
 		x_overlap = x2_loc2 - x1_loc1;
 	}
 
 	//compute Y-Axis overlap
-	if (y1_loc1 > y2_loc2 || y2_loc1 < y1_loc2) {
+	if (y1_loc1 > y2_loc2 || y2_loc1 < y1_loc2) 
+	{
 		y_overlap = 0;
-	} else if (y1_loc1 <= y1_loc2 && y2_loc2 <= y2_loc1) {
+	} else if (y1_loc1 <= y1_loc2 && y2_loc2 <= y2_loc1) 
+	{
 		y_overlap = y2_loc2 - y1_loc2;
-	} else if (y1_loc2 <= y1_loc1 && y2_loc1 <= y2_loc2) {
+	} else if (y1_loc2 <= y1_loc1 && y2_loc1 <= y2_loc2) 
+	{
 		y_overlap = y2_loc1 - y1_loc1;
-	} else if (y1_loc1 <= y1_loc2 && y2_loc1 <= y2_loc2) {
+	} else if (y1_loc1 <= y1_loc2 && y2_loc1 <= y2_loc2) 
+	{
 		y_overlap = y2_loc1 - y1_loc2;
-	} else if (y1_loc2 <= y1_loc1 && y2_loc2 <= y2_loc1) {
+	} else if (y1_loc2 <= y1_loc1 && y2_loc2 <= y2_loc1) 
+	{
 		y_overlap = y2_loc2 - y1_loc1;
 	}
 
@@ -96,7 +107,8 @@ position2	 | 39	   | 44		 | 102	   | 432
 and
 det_scores: k x 1 Mat with Mat.at<float>(i, 0) = "Detection Score of i-th position"
 */
-int extractDetections(Mat img_arg, const char* svm_name, Mat &positions, Mat &det_scores) {
+int extractDetections(Mat img_arg, const char* svm_name, Mat &positions, Mat &det_scores) 
+{
 	Mat img = img_arg.clone();
 	int width = img.cols;
 	int height = img.rows;
@@ -111,7 +123,8 @@ int extractDetections(Mat img_arg, const char* svm_name, Mat &positions, Mat &de
 	my_svm.load(svm_name);
 	Mat det_score = Mat::zeros(1, 1, CV_32F);;
 
-	while (height >= 142 && width >= 78) {
+	while (height >= 142 && width >= 78) 
+	{
 		width = img.cols;
 		height = img.rows;
 		hogCells = computeHoG(img, CELL_SIZE, dims);
@@ -123,8 +136,10 @@ int extractDetections(Mat img_arg, const char* svm_name, Mat &positions, Mat &de
 		int blocks_x = CPW_X - (BLOCK_SIZE - 1);
 		int descriptor_len = BLOCK_SIZE * BLOCK_SIZE * dims[2] * blocks_x * blocks_y;
 
-		for (int i = 0; i < windows_y; i += 3) {
-			for (int j = 0; j < windows_x; j += 3) {
+		for (int i = 0; i < windows_y; i += 3) 
+		{
+			for (int j = 0; j < windows_x; j += 3) 
+			{
 				croppedCells = copyHOGCells(i, j, hogCells, dims, cropDims);
 				descriptor = computeWindowDescriptor(croppedCells, cropDims);
 
@@ -138,7 +153,8 @@ int extractDetections(Mat img_arg, const char* svm_name, Mat &positions, Mat &de
 				window_count++;
 
 				det_score.at<float>(0, 0) = my_svm.predict(descriptor, true);
-				if (det_score.at<float>(0, 0) < 0.0) {
+				if (det_score.at<float>(0, 0) < 0.0) 
+				{
 					positions.push_back(currentWindowPos);
 					det_scores.push_back(det_score);
 
@@ -156,16 +172,18 @@ int extractDetections(Mat img_arg, const char* svm_name, Mat &positions, Mat &de
 
 
 /*
-Performs the non-maximum suppression and only takes the top N remaining detections, 
-as requested in task 3.3 and 3.4
+	Performs the non-maximum suppression and only takes the top N remaining detections, 
+	as requested in task 3.3 and 3.4
 */
-void nonMaxSuppression(Mat &positions, Mat &det_scores, int N) {
+void nonMaxSuppression(Mat &positions, Mat &det_scores, int N) 
+{
 	int n = positions.rows;
 	Mat pos_temp, scores_temp;
 
 	//non-maximum suppression
 	sortByDetectionScore(positions, det_scores);
-	for (int i = 0; i < n && i < N; i++) {
+	for (int i = 0; i < n && i < N; i++) 
+	{
 		pos_temp = Mat::zeros(0, 4, CV_32S);
 		scores_temp = Mat::zeros(0, 1, CV_32F);
 		for (int k = 0; k <= i; k++) {
@@ -174,7 +192,8 @@ void nonMaxSuppression(Mat &positions, Mat &det_scores, int N) {
 		}
 
 		for (int j = i + 1; j < n; j++) {
-			if (fastComputeIoU(cloneRowInt(positions, i), cloneRowInt(positions, j)) < 0.2) {
+			if (fastComputeIoU(cloneRowInt(positions, i), cloneRowInt(positions, j)) < 0.2) 
+			{
 				scores_temp.push_back(cloneRowFloat(det_scores, j));
 				pos_temp.push_back(cloneRowInt(positions, j));
 			}
@@ -188,7 +207,8 @@ void nonMaxSuppression(Mat &positions, Mat &det_scores, int N) {
 	//only use top N detections at most
 	pos_temp = Mat::zeros(0, 4, CV_32S);
 	scores_temp = Mat::zeros(0, 1, CV_32F);
-	for (int i = 0; i < n && i < N; i++) {
+	for (int i = 0; i < n && i < N; i++) 
+	{
 		pos_temp.push_back(cloneRowInt(positions, i));
 		scores_temp.push_back(cloneRowFloat(det_scores, i));
 	}
@@ -197,12 +217,14 @@ void nonMaxSuppression(Mat &positions, Mat &det_scores, int N) {
 }
 
 /*
-clones a matrix row with int format
+	clones a matrix row with int format
 */
-Mat cloneRowInt(Mat matrix, int row) {
+Mat cloneRowInt(Mat matrix, int row) 
+{
 	int cols = matrix.cols;
 	Mat cloned_mat = Mat::zeros(1, cols, CV_32S);
-	for (int i = 0; i < cols; i++) {
+	for (int i = 0; i < cols; i++) 
+	{
 		cloned_mat.at<int>(0, i) = matrix.at<int>(row, i);
 	}
 	return cloned_mat;
@@ -210,12 +232,14 @@ Mat cloneRowInt(Mat matrix, int row) {
 
 
 /*
-clones a matrix row with float format
+	clones a matrix row with float format
 */
-Mat cloneRowFloat(Mat matrix, int row) {
+Mat cloneRowFloat(Mat matrix, int row) 
+{
 	int cols = matrix.cols;
 	Mat cloned_mat = Mat::zeros(1, cols, CV_32F);
-	for (int i = 0; i < cols; i++) {
+	for (int i = 0; i < cols; i++) 
+	{
 		cloned_mat.at<float>(0, i) = matrix.at<float>(row, i);
 	}
 	return cloned_mat;
@@ -223,20 +247,24 @@ Mat cloneRowFloat(Mat matrix, int row) {
 
 
 /*
-Sorts the rows of positions and det_scores according to det_scores (ascending)
+	Sorts the rows of positions and det_scores according to det_scores (ascending)
 */
-void sortByDetectionScore(Mat &positions, Mat &det_scores) {
+void sortByDetectionScore(Mat &positions, Mat &det_scores) 
+{
 	int n = positions.rows;
 	Mat pos = Mat::zeros(1, 4, CV_32S); 
 	float key;
 	int j;
-	for (int i = 1; i < n; i++) {
-		for (int p = 0; p < 4; p++) {
+	for (int i = 1; i < n; i++) 
+	{
+		for (int p = 0; p < 4; p++) 
+		{
 			pos.at<int>(0, p) = positions.at<int>(i, p);
 		}
 		key = det_scores.at<float>(i, 0);
 		j = i; 
-		while (j > 0 && key < det_scores.at<float>(j - 1, 0)) {
+		while (j > 0 && key < det_scores.at<float>(j - 1, 0))
+		{
 			det_scores.at<float>(j, 0) = det_scores.at<float>(j - 1, 0);
 			for (int p = 0; p < 4; p++) {
 				positions.at<int>(j, p) = positions.at<int>(j - 1, p);
@@ -244,7 +272,8 @@ void sortByDetectionScore(Mat &positions, Mat &det_scores) {
 			j--;
 		}
 		det_scores.at<float>(j, 0) = key;
-		for (int p = 0; p < 4; p++) {
+		for (int p = 0; p < 4; p++) 
+		{
 			positions.at<int>(j, p) = pos.at<int>(0, p);
 		}
 
@@ -253,17 +282,20 @@ void sortByDetectionScore(Mat &positions, Mat &det_scores) {
 
 
 /*
-Pads img with pad zero-pixels on every side
+	Pads img with pad zero-pixels on every side
 */
-Mat padImgWithZeros(Mat img, int pad) {
+Mat padImgWithZeros(Mat img, int pad)
+{
 	int width_old = img.cols;
 	int height_old = img.rows;
 	int width_new = width_old + 2 * pad;
 	int height_new = height_old + 2 * pad;
 	Mat img_work = Mat::zeros(height_new, width_new, CV_8UC3);
 
-	for (int i = pad; i < height_old + pad; i++) {
-		for (int j = pad; j < width_old + pad; j++) {
+	for (int i = pad; i < height_old + pad; i++) 
+	{
+		for (int j = pad; j < width_old + pad; j++) 
+		{
 			img_work.at<Vec3b>(i, j) = img.at<Vec3b>(i - pad, j - pad);
 		}
 	}
@@ -272,21 +304,24 @@ Mat padImgWithZeros(Mat img, int pad) {
 
 
 /*
-Draws the results(green) and groundTruths(red) into the image img.
+	Draws the results(green) and groundTruths(red) into the image img.
 */
-Mat drawResults(Mat img, Mat results, Mat groundTruths) {
+Mat drawResults(Mat img, Mat results, Mat groundTruths) 
+{
 	Mat img_work = img.clone();
 	int resCount = results.rows;
 	int truCount = groundTruths.rows;
 
-	for (int i = 0; i < resCount; i++) {
+	for (int i = 0; i < resCount; i++) 
+	{
 		Point p1(results.at<int>(i, 0), results.at<int>(i, 1));
 		Point p2(results.at<int>(i, 2), results.at<int>(i, 3));
 		Scalar green(0, 255, 0);
 		rectangle(img_work, p1, p2, green);
 	}
 
-	for (int i = 0; i < truCount; i++) {
+	for (int i = 0; i < truCount; i++)
+	{
 		Point p1(groundTruths.at<int>(i, 0), groundTruths.at<int>(i, 1));
 		Point p2(groundTruths.at<int>(i, 2), groundTruths.at<int>(i, 3));
 		Scalar red(0, 0, 255);
@@ -298,9 +333,10 @@ Mat drawResults(Mat img, Mat results, Mat groundTruths) {
 
 
 /*
-Pads img by spreading its border pixels to every side by pad pixels
+	Pads img by spreading its border pixels to every side by pad pixels
 */
-Mat padWithBorderPixels(Mat img, int pad) {
+Mat padWithBorderPixels(Mat img, int pad) 
+{
 	int width_old = img.cols;
 	int height_old = img.rows;
 	int width_new = width_old + 2 * pad;
@@ -308,36 +344,46 @@ Mat padWithBorderPixels(Mat img, int pad) {
 	Mat img_work = Mat::zeros(height_new, width_new, CV_8UC3);
 
 	//padding with zeros
-	for (int i = pad; i < height_old + pad; i++) {
-		for (int j = pad; j < width_old + pad; j++) {
+	for (int i = pad; i < height_old + pad; i++) 
+	{
+		for (int j = pad; j < width_old + pad; j++) 
+		{
 			img_work.at<Vec3b>(i, j) = img.at<Vec3b>(i - pad, j - pad);
 		}
 	}
 
 	//padding left border
-	for (int i = pad; i < height_old + pad; i++) {
-		for (int j = 0; j < pad; j++) {
+	for (int i = pad; i < height_old + pad; i++) 
+	{
+		for (int j = 0; j < pad; j++) 
+		{
 			img_work.at<Vec3b>(i, j) = img.at<Vec3b>(i - pad, 0);
 		}
 	}
 
 	//padding right border
-	for (int i = pad; i < height_old + pad; i++) {
-		for (int j = pad + width_old; j < width_new; j++) {
+	for (int i = pad; i < height_old + pad; i++) 
+	{
+		for (int j = pad + width_old; j < width_new; j++) 
+		{
 			img_work.at<Vec3b>(i, j) = img.at<Vec3b>(i - pad, width_old - 1);
 		}
 	}
 
 	//padding top border
-	for (int i = 0; i < pad; i++) {
-		for (int j = 0; j < width_new; j++) {
+	for (int i = 0; i < pad; i++) 
+	{
+		for (int j = 0; j < width_new; j++) 
+		{
 			img_work.at<Vec3b>(i, j) = img_work.at<Vec3b>(pad, j);
 		}
 	}
 
 	//padding bottom border
-	for (int i = pad + height_old; i < height_new; i++) {
-		for (int j = 0; j < width_new; j++) {
+	for (int i = pad + height_old; i < height_new; i++) 
+	{
+		for (int j = 0; j < width_new; j++) 
+		{
 			img_work.at<Vec3b>(i, j) = img_work.at<Vec3b>(pad + height_old - 1, j);
 		}
 	}
@@ -345,24 +391,27 @@ Mat padWithBorderPixels(Mat img, int pad) {
 }
 
 /*
-Computes the miss rate (double in [0, 1]) out of the results and groundTruths
-
-KANN NOCH NICHT VERWENDET WERDEN (VERWENDET ZWEI FEHLERHAFTE FUNKTIONEN)!!!!!!!!!!!!!
+	Computes the missrate (double in [0, 1]) out of the results and groundTruths
 */
-double computeMissRate(Mat results, Mat groundTruths) {
+double computeMissRate(Mat results, Mat groundTruths) 
+{
 	int resCount = results.rows;
 	int truCount = groundTruths.rows;
 	int missed = 0;
 
-	for (int i = 0; i < truCount; i++) {
+	for (int i = 0; i < truCount; i++) 
+	{
 		bool found = false;
-		for (int j = 0; j < resCount; j++) {
-			if (fastComputeIoU(cloneRowInt(results, j), cloneRowInt(groundTruths, i)) >= 0.5) {
+		for (int j = 0; j < resCount; j++) 
+		{
+			if (fastComputeIoU(cloneRowInt(results, j), cloneRowInt(groundTruths, i)) >= 0.5) 
+			{
 				found = true;
 				break;
 			}
 		}
-		if (found == false) {
+		if (found == false) 
+		{
 			missed++;
 		}
 	}
@@ -371,15 +420,18 @@ double computeMissRate(Mat results, Mat groundTruths) {
 
 
 /*
-Eliminates every detection form positions and det_scores with a detection score >= sigma
+	Eliminates every detection form positions and det_scores with a detection score >= sigma
 */
-void suppressThreshold(Mat &positions, Mat &det_scores, float sigma) {
+void suppressThreshold(Mat &positions, Mat &det_scores, float sigma) 
+{
 	Mat pos_temp = Mat::zeros(0, 4, CV_32S);
 	Mat scores_temp = Mat::zeros(0, 1, CV_32F);
 	int n = positions.rows;
 
-	for (int i = 0; i < n; i++) {
-		if (det_scores.at<float>(i, 0) < sigma) {
+	for (int i = 0; i < n; i++)
+	{
+		if (det_scores.at<float>(i, 0) < sigma)
+		{
 			pos_temp.push_back(cloneRowInt(positions, i));
 			scores_temp.push_back(cloneRowFloat(det_scores, i));
 		}
@@ -390,22 +442,27 @@ void suppressThreshold(Mat &positions, Mat &det_scores, float sigma) {
 
 
 /*
-counts the false positives in results (those who do not fit to anything in groundTruths)
+	counts the false positives in results (those who do not fit to anything in groundTruths)
 */
-int countFalsePositives(Mat results, Mat groundTruths) {
+int countFalsePositives(Mat results, Mat groundTruths) 
+{
 	int resCount = results.rows;
 	int truCount = groundTruths.rows;
 	int falsePos = 0;
 
-	for (int i = 0; i < resCount; i++) {
+	for (int i = 0; i < resCount; i++) 
+	{
 		bool found = false;
-		for (int j = 0; j < truCount; j++) {
-			if (fastComputeIoU(cloneRowInt(results, i), cloneRowInt(groundTruths, j)) >= 0.5) {
+		for (int j = 0; j < truCount; j++) 
+		{
+			if (fastComputeIoU(cloneRowInt(results, i), cloneRowInt(groundTruths, j)) >= 0.5) 
+			{
 				found = true;
 				break;
 			}
 		}
-		if (found == false) {
+		if (found == false) 
+		{
 			falsePos++;
 		}
 	}
@@ -413,10 +470,11 @@ int countFalsePositives(Mat results, Mat groundTruths) {
 }
 
 /*
-computes average miss rate and fppw of the whole test set for one sigma, 
-and subsequently adds these values to missRates and fppw
+	computes average missrate and fppw of the whole test set for one sigma, 
+	and subsequently adds these values to missRates and fppw
 */
-void computeDETPoint(Mat &fppw, Mat &missRates, const char* svm, float sigma) {
+void computeDETPoint(Mat &fppw, Mat &missRates, const char* svm, float sigma) 
+{
 	ifstream fileNeg("INRIAPerson/INRIAPerson/Test/neg.lst");
 	ifstream filePos("INRIAPerson/INRIAPerson/Test/pos.lst");
 	ifstream fileAnnotations("INRIAPerson/INRIAPerson/Test/annotations.lst");
@@ -432,11 +490,13 @@ void computeDETPoint(Mat &fppw, Mat &missRates, const char* svm, float sigma) {
 	Mat new_missrate = Mat::zeros(1, 1, CV_64F);
 	Mat groundTruths;
 
-	while (getline(filePos, line) && getline(fileAnnotations, annotation)) {
+	while (getline(filePos, line) && getline(fileAnnotations, annotation)) 
+	{
 		cout << "Scanning: " << line << endl;
 		sampleImg = imread(INRIA_PATH + line);
 		groundTruths = getGroundTruth(INRIA_PATH + annotation);
-		if (!sampleImg.empty()) {
+		if (!sampleImg.empty()) 
+		{
 			positions = Mat::zeros(0, 4, CV_32S);
 			det_scores = Mat::zeros(0, 1, CV_32F);
 			allWindowsTested += extractDetections(sampleImg, svm, positions, det_scores);
@@ -450,10 +510,12 @@ void computeDETPoint(Mat &fppw, Mat &missRates, const char* svm, float sigma) {
 		}
 	}
 
-	while (getline(fileNeg, line)) {
+	while (getline(fileNeg, line))
+	{
 		cout << "Scanning: " << line << endl;
 		sampleImg = imread(INRIA_PATH + line);
-		if (!sampleImg.empty()) {
+		if (!sampleImg.empty()) 
+		{
 			positions = Mat::zeros(0, 4, CV_32S);
 			det_scores = Mat::zeros(0, 1, CV_32F);
 			allWindowsTested += extractDetections(sampleImg, svm, positions, det_scores);
